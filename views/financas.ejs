@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Finanças - Members In Church</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+
+      
+ <!-- Botão hambúrguer -->
+<button id="menuBtn" class="sm:hidden fixed top-4 left-4 z-50 p-2 bg-white rounded-full shadow-md focus:outline-none">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+    </svg>
+  </button>
+
+  <body class="bg-gray-100 min-h-screen flex">
+
+  <!-- Sidebar -->
+  <aside id="sidebar" class="w-64 bg-white shadow-lg h-screen fixed sm:static top-0 left-0 z-40 sm:translate-x-0 transform -translate-x-full transition-transform duration-300">
+    <nav class="p-4 space-y-4 text-sm text-gray-700">
+      <img src="https://img.icons8.com/ios-filled/100/4a90e2/church.png" alt="Logo" class="w-16 mx-auto mb-2" />
+      <h2 class="text-xl font-bold text-gray-700">Painel</h2>
+      <a href="/dashboard" class="block hover:text-blue-600">Dashboard</a>
+      <a href="/lista_membros" class="block hover:text-blue-600">Ver membros</a>
+      <a href="/cadastro_membros" class="block hover:text-blue-600">Cadastrar Membro</a>
+      <a href="/aniversariantes" class="block hover:text-blue-600">Aniversariantes do Mês</a>
+      <a href="/financas" class="block hover:text-blue-600">Financeiro</a>
+      <a href="/visitantes" class="block hover:text-blue-600">Visitantes</a>
+      <a href="/agenda" class="block hover:text-blue-600">Agenda</a>
+      <a href="/avisos" class="block hover:text-blue-600">Avisos</a>
+      <a href="/exportar/csv" class="block hover:text-blue-600">Exportar CSV</a>
+      <a href="/financas/exportar/pdf" class="block hover:text-blue-600">Exportar PDF</a>      
+      <a href="/" class="block text-red-500 hover:text-red-700">Sair</a>
+      <img src="/img/logo2.png" alt="Logotipo Members In Church" class="w-32 mx-auto opacity-80">
+    </nav>
+  </aside>
+
+  <script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const menuBtn = document.getElementById("menuBtn");
+    const sidebar = document.getElementById("sidebar");
+
+    menuBtn.addEventListener("click", function () {
+      sidebar.classList.toggle("-translate-x-full");
+    });
+  });
+</script>
+
+
+
+    <!-- Conteúdo principal -->
+<main class="flex-1 p-4 overflow-y-auto sm:h-screen mt-4 sm:mt-0">
+      <h1 class="text-2xl font-bold text-center text-gray-800 mb-4">Controle Financeiro</h1>
+
+      <!-- SALDO E TOTAIS -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+          <div class="bg-white p-6 rounded-lg shadow">
+          <h2 class="text-lg font-semibold mb-2">Saldo Atual</h2>
+          <p class="text-2xl font-bold text-green-600">R$ <%= saldoAtual.toFixed(2) %></p>
+        </div>
+        <div class="bg-white p-6 rounded-lg shadow">
+          <h2 class="text-lg font-semibold mb-2">Total de Entradas</h2>
+          <p class="text-2xl font-bold text-blue-600">R$ <%= totalEntradas.toFixed(2) %></p>
+        </div>
+        <div class="bg-white p-6 rounded-lg shadow">
+          <h2 class="text-lg font-semibold mb-2">Total de Saídas</h2>
+          <p class="text-2xl font-bold text-red-600">R$ <%= totalSaidas.toFixed(2) %></p>
+        </div>
+      </div>
+
+      <!-- FORMULÁRIO DE LANÇAMENTO -->
+      <form action="/financas/lancamento" method="POST" class="bg-white p-6 rounded-lg shadow mb-8">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label class="block font-semibold mb-1">Tipo</label>
+            <select name="tipo" required class="w-full border rounded px-3 py-2">
+              <option value="Entrada">Entrada</option>
+              <option value="Saída">Saída</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-semibold mb-1">Categoria</label>
+            <select name="categoria" required class="w-full border rounded px-3 py-2">
+              <option value="Dízimo">Dízimo</option>
+              <option value="Oferta">Oferta</option>
+              <option value="Doação">Doação</option>
+              <option value="Conta">Conta</option>
+              <option value="Outro">Outro</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-semibold mb-1">Meio de pagamento</label>
+            <select name="forma_pagamento" required class="w-full border rounded px-3 py-2">
+              <option value="dinheiro">Dinheiro</option>
+              <option value="pix">Pix</option>
+              <option value="transferencia">Transferência</option>
+              <option value="cartao">Cartão</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+          <div>
+            <label class="block font-semibold mb-1">Valor (R$)</label>
+            <input type="number" step="0.01" name="valor" class="w-full border rounded px-3 py-2" required>
+          </div>
+        
+          <div>
+            <label class="block font-semibold mb-1">Data</label>
+            <input type="date" name="data" class="w-full border rounded px-3 py-2" required>
+          </div>
+
+          <div class="col-span-1 md:col-span-2">
+            <label class="block font-semibold mb-1">Descrição / Observação</label>
+            <textarea name="descricao" rows="2" class="w-full border rounded px-3 py-2" placeholder="Opcional..."></textarea>
+          </div>
+        </div>
+
+        <button type="submit" class="mt-6 bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">Adicionar Lançamento</button>
+      </form>
+
+      <!-- FILTRO POR DATA -->
+<form action="/financas" method="GET" class="bg-white p-4 rounded-lg shadow mb-4 flex flex-wrap items-end gap-4">
+  <div>
+    <label class="block text-sm font-semibold mb-1">Data Início</label>
+    <input type="date" name="dataInicio" class="border rounded px-3 py-2" required>
+  </div>
+  <div>
+    <label class="block text-sm font-semibold mb-1">Data Fim</label>
+    <input type="date" name="dataFim" class="border rounded px-3 py-2" required>
+  </div>
+  <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+    Filtrar
+  </button>
+</form>
+
+
+      <!-- LISTAGEM DE LANÇAMENTOS -->
+<% if (lancamentos.length > 0) { %>
+  <div class="bg-white p-4 rounded-lg shadow overflow-x-auto">
+    <h2 class="text-lg font-semibold mb-4">Lançamentos Recentes</h2>
+    <table class="w-full table-auto min-w-[600px] text-sm">
+      <thead>
+        <tr class="bg-gray-200 text-gray-700">
+          <th class="px-4 py-2 text-left whitespace-nowrap">Data</th>
+          <th class="px-4 py-2 text-left whitespace-nowrap">Tipo</th>
+          <th class="px-4 py-2 text-left whitespace-nowrap">Categoria</th>
+          <th class="px-4 py-2 text-left whitespace-nowrap">Meio</th>
+          <th class="px-4 py-2 text-left whitespace-nowrap">Valor</th>
+          <th class="px-4 py-2 text-left whitespace-nowrap">Observação</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% lancamentos.forEach(l => { %>
+          <% 
+            const data = new Date(l.data);
+            const dia = String(data.getDate()).padStart(2, '0');
+            const mes = String(data.getMonth() + 1).padStart(2, '0');
+            const ano = data.getFullYear();
+            const dataFormatada = `${dia}/${mes}/${ano}`;
+          %>
+          <tr class="border-t">
+            <td class="px-4 py-2 whitespace-nowrap"><%= dataFormatada %></td>
+            <td class="px-4 py-2 capitalize whitespace-nowrap"><%= l.tipo %></td>
+            <td class="px-4 py-2 capitalize whitespace-nowrap"><%= l.categoria %></td>
+            <td class="px-4 py-2 capitalize whitespace-nowrap"><%= l.forma_pagamento %></td>
+            <td class="px-4 py-2 whitespace-nowrap text-green-600">R$ <%= parseFloat(l.valor).toFixed(2) %></td>
+            <td class="px-4 py-2 break-words"><%= l.descricao %></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+<% } %>

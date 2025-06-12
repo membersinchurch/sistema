@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Members In Church</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gray-100 flex min-h-screen">
+
+   <!-- Botão hambúrguer -->
+  <button id="menuBtn" class="sm:hidden fixed top-4 left-4 z-50 p-2 bg-white rounded-full shadow-md focus:outline-none">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+    </svg>
+  </button>
+
+  <!-- Sidebar -->
+<aside id="sidebar" class="fixed sm:static top-0 left-0 w-64 h-screen bg-white shadow-lg transform -translate-x-full sm:translate-x-0 transition-transform duration-300 z-40">
+    <nav class="p-4 space-y-4 text-sm text-gray-700">
+      <img src="https://img.icons8.com/ios-filled/100/4a90e2/church.png" alt="Logo" class="w-16 mx-auto mb-2" />
+      <h2 class="text-xl font-bold text-gray-700">Painel</h2>
+      <a href="/dashboard" class="block hover:text-blue-600">Dashboard</a>
+      <a href="/lista_membros" class="block hover:text-blue-600">Ver membros</a>
+      <a href="/cadastro_membros" class="block hover:text-blue-600">Cadastrar Membro</a>
+      <a href="/financas" class="block hover:text-blue-600">Financeiro</a>
+      <a href="/visitantes" class="block hover:text-blue-600">Visitantes</a>
+      <a href="/aniversariantes" class="block hover:text-blue-600">Aniversariantes</a>
+      <a href="/agenda" class="block hover:text-blue-600">Agenda</a>
+      <a href="/avisos" class="block hover:text-blue-600">Avisos</a>
+      <a href="/cadastro" class="block hover:text-blue-600">Cadastrar Usuários</a>
+      <a href="/exportar/csv" class="block hover:text-blue-600">Exportar CSV</a>
+      <a href="/exportar/pdf" class="block hover:text-blue-600">Exportar PDF</a>
+      <a href="/" class="block text-red-500 hover:text-red-700">Sair</a>
+      <img src="/img/logo2.png" alt="Logotipo Members In Church" class="w-32 mx-auto opacity-80">
+    </nav>
+  </aside>
+
+  <script>
+  function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    sidebar.classList.toggle('-translate-x-full');
+  }
+</script>
+
+  <!-- Conteúdo -->
+<div class="flex-1 flex flex-col overflow-y-auto h-screen mt-14 sm:mt-0">
+
+  <!-- Conteúdo principal -->
+<div class="flex-1 ml-0 sm:ml-0 mt-14 sm:mt-0 px-4 pb-10">
+        <h1 class="text-2xl font-bold text-center text-gray-800 mb-6 sm:mt-4">Lista de Membros</h1>
+
+  <input 
+    type="text" 
+    id="searchInput" 
+    placeholder="🔍 Buscar membro por nome..." 
+    class="w-full sm:w-1/2 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring focus:border-blue-300"
+    oninput="filtrarMembros()"
+  />
+</div>
+
+      
+        <% if (typeof mensagem !== 'undefined' && mensagem) { %>
+        <div class="bg-green-100 text-green-800 px-4 py-2 rounded mb-4">
+          <%= mensagem %>
+        </div>
+      <% } %>
+
+      <div class="mt-6 px-2"></div>
+<div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-1 gap-y-1 px-4">
+  <% membros.forEach(membro => { %>
+    <div class="bg-white p-2 rounded shadow w-full text-center text-sm opacity-0 transform translate-y-4 transition duration-500 hover:scale-105 hover:shadow-lg">
+
+
+      <% if (membro.foto) { %>
+        <img src="<%= membro.foto %>" alt="Foto de <%= membro.nome %>" class="w-14 h-14 object-cover rounded-full mx-auto mb-1">
+      <% } else { %>
+        <div class="w-14 h-14 bg-gray-300 rounded-full mx-auto mb-1"></div>
+      <% } %>
+
+      <h2 class="text-sm font-semibold truncate"><%= membro.nome %></h2>
+      <p class="text-xs text-gray-600">📅 <%= new Date(membro.data_nascimento).toLocaleDateString("pt-BR") %></p>
+
+      <p class="text-xs">
+        <% if (membro.telefone) { %>
+  <a href="https://wa.me/<%= membro.telefone.replace(/\D/g, '') %>" target="_blank" class="text-green-600">
+    📞 <%= membro.telefone %>
+  </a>
+<% } else { %>
+  <span class="text-gray-500 italic">Sem telefone</span>
+<% } %>
+      </p>
+
+      <p class="text-xs text-gray-600 truncate">✉️ <%= membro.email %></p>
+
+      <div class="card-body">
+      <p class="text-xs text-gray-600 truncate">🎤 <%= membro.ministerio_nome || "Ministério não informado" %></p>
+      <!-- outros campos  -->
+    </div>
+
+
+      <div class="flex justify-center gap-1 mt-2">
+        <form action="/editar/<%= membro.id %>" method="GET">
+          <button type="submit" class="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600 text-xs">Editar</button>
+        </form>
+        <form action="/excluir/<%= membro.id %>" method="POST" onsubmit="return confirm('Tem certeza que deseja excluir este membro?');">
+          <button type="submit" class="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600 text-xs">Excluir</button>
+        </form>
+      </div>
+    </div>
+  <% }) %>
+</div>
+
+    </main>
+  </div>
+
+  <!-- Script sidebar -->
+  <script>
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      sidebar.classList.toggle('-translate-x-full');
+    }
+  </script>
+<script>
+  function filtrarMembros() {
+    const termo = document.getElementById('searchInput').value.toLowerCase();
+    const cards = document.querySelectorAll('.grid > div');
+
+    let delay = 0;
+
+    cards.forEach(card => {
+      const nome = card.querySelector('h2').textContent.toLowerCase();
+      const corresponde = nome.includes(termo);
+
+      if (corresponde) {
+        card.style.display = 'block';
+
+        // Reinicia os estilos de animação
+        card.classList.add('opacity-0', 'translate-y-4');
+        card.classList.remove('opacity-100', 'translate-y-0');
+
+        setTimeout(() => {
+          card.classList.remove('opacity-0', 'translate-y-4');
+          card.classList.add('opacity-100', 'translate-y-0');
+        }, delay);
+
+        delay += 100; // animação em cascata
+      } else {
+        card.style.display = 'none';
+      }
+    });
+  }
+
+  function animarCards() {
+    const cards = document.querySelectorAll('.grid > div');
+    cards.forEach((card, index) => {
+      setTimeout(() => {
+        card.classList.remove('opacity-0', 'translate-y-4');
+        card.classList.add('opacity-100', 'translate-y-0');
+      }, index * 100);
+    });
+  }
+
+  // Anima os cards ao carregar a página
+  window.addEventListener('DOMContentLoaded', animarCards);
+</script>
+
+<script>
+  function animarCards() {
+    const cards = document.querySelectorAll('.grid > div');
+    cards.forEach((card, index) => {
+      setTimeout(() => {
+        card.classList.remove('opacity-0', 'translate-y-4');
+        card.classList.add('opacity-100', 'translate-y-0');
+      }, index * 100); // atraso gradual
+    });
+  }
+  
+  window.addEventListener('DOMContentLoaded', animarCards);
+</script>
+<!-- Script correto para o botão hamburguer -->
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const toggleButton = document.getElementById("menuBtn"); // este é o ID correto
+    const sidebar = document.getElementById("sidebar");
+
+    if (toggleButton && sidebar) {
+      toggleButton.addEventListener("click", () => {
+        sidebar.classList.toggle("-translate-x-full");
+      });
+    }
+  });
+</script>
+
+
+</body>
+</html>

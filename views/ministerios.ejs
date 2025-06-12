@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <%- include('partials/head') %>
+</head>
+<body>
+  <%- include('partials/sidebar') %>
+  <main class="p-6">
+    <h1 class="text-xl font-bold mb-4">Lista de Ministérios</h1>
+    <a href="/cadastrar-ministerio" class="text-blue-600 underline">+ Novo Ministério</a>
+    <ul class="mt-4 space-y-2">
+      <% ministerios.forEach(min => { %>
+        <li class="border p-2 rounded">
+          <strong><%= min.nome %></strong><br/>
+          <small><%= min.descricao %></small>
+        </li>
+      <% }) %>
+    </ul>
+  </main>
+</body>
+</html>

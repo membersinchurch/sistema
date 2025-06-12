@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Cadastrar Membro - Members In Church</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gray-100 flex min-h-screen overflow-x-hidden">
+
+  <!-- Botão hambúrguer -->
+  <button id="menuBtn" class="sm:hidden fixed top-4 left-4 z-50 p-2 bg-white rounded-full shadow-md focus:outline-none">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+    </svg>
+  </button>
+
+  <!-- Sidebar fixa -->
+  <aside id="sidebar" class="fixed sm:static top-0 left-0 w-64 h-screen bg-white shadow-lg transform -translate-x-full sm:translate-x-0 transition-transform duration-300 z-40">
+    <nav class="p-4 space-y-4 text-sm text-gray-700">
+      <img src="https://img.icons8.com/ios-filled/100/4a90e2/church.png" alt="Logo" class="w-16 mx-auto mb-2" />
+      <h2 class="text-xl font-bold text-gray-700">Painel</h2>
+      <a href="/dashboard" class="block hover:text-blue-600">Dashboard</a>
+      <a href="/lista_membros" class="block hover:text-blue-600">Ver membros</a>
+      <a href="/cadastro_membros" class="block hover:text-blue-600">Cadastrar Membro</a>
+      <a href="/financas" class="block hover:text-blue-600">Financeiro</a>
+      <a href="/visitantes" class="block hover:text-blue-600">Visitantes</a>
+      <a href="/aniversariantes" class="block hover:text-blue-600">Aniversariantes do Mês</a>
+      <a href="/agenda" class="block hover:text-blue-600">Agenda</a>
+      <a href="/avisos" class="block hover:text-blue-600">Avisos</a>
+      <a href="/cadastro" class="block hover:text-blue-600">Cadastrar Usuários</a>
+      <a href="/exportar/csv" class="block hover:text-blue-600">Exportar CSV</a>
+      <a href="/exportar/pdf" class="block hover:text-blue-600">Exportar PDF</a>
+      <a href="/" class="block text-red-500 hover:text-red-700">Sair</a>
+      <img src="/img/logo2.png" alt="Logotipo Members In Church" class="w-32 mx-auto opacity-80">
+    </nav>
+  </aside>
+
+  <!-- Conteúdo principal com rolagem -->
+<div class="flex-1 ml-0 sm:ml-50 mt-14 sm:mt-0 px-4 pb-10 overflow-y-auto min-h-screen">
+    <h1 class="text-2xl font-bold text-center text-gray-800 mb-4 sm:mt-4">Cadastro de Membros</h1>
+
+    <main class="flex-1 p-1">
+      <% if (mensagem) { %>
+        <div class="bg-green-100 text-green-800 px-4 py-2 rounded mb-4">
+          <%= mensagem %>
+        </div>
+      <% } %>
+
+      <form action="/cadastro_membros" method="POST" enctype="multipart/form-data" class="bg-white p-6 rounded shadow max-w-xl mx-auto space-y-4">
+        <div>
+          <label for="nome" class="block text-sm font-medium text-gray-700">Nome</label>
+          <input type="text" id="nome" name="nome" required class="mt-1 block w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring focus:border-blue-300"/>
+        </div>
+
+        <label for="ministerio" class="block text-sm font-medium text-gray-700">Ministério</label>
+        <select name="ministerio" id="ministerio" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
+          <option value="">Selecione um ministério</option>
+          <% ministerios.forEach(ministerio => { %>
+            <option value="<%= ministerio.id %>"><%= ministerio.nome %></option>
+          <% }) %>
+        </select>
+
+        <div>
+          <label class="block text-gray-700 font-bold mb-2">Sexo:</label>
+          <div class="flex items-center space-x-4">
+            <label class="inline-flex items-center">
+              <input type="radio" class="form-radio text-indigo-600" name="sexo" value="Masculino" required>
+              <span class="ml-2">Masculino</span>
+            </label>
+            <label class="inline-flex items-center">
+              <input type="radio" class="form-radio text-pink-500" name="sexo" value="Feminino">
+              <span class="ml-2">Feminino</span>
+            </label>
+          </div>
+        </div>
+
+        <div>
+          <label for="data_nascimento" class="block text-sm font-medium text-gray-700">Data de Nascimento</label>
+          <input type="date" id="data_nascimento" name="data_nascimento" required class="mt-1 block w-full border border-gray-300 rounded px-3 py-2"/>
+        </div>
+
+        <div>
+          <label for="telefone" class="block text-sm font-medium text-gray-700">Telefone</label>
+          <input type="text" id="telefone" name="telefone" required class="mt-1 block w-full border border-gray-300 rounded px-3 py-2"/>
+        </div>
+
+        <div>
+          <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+          <input type="email" id="email" name="email" required class="mt-1 block w-full border border-gray-300 rounded px-3 py-2"/>
+        </div>
+
+        <div>
+          <label for="foto" class="block text-sm font-medium text-gray-700">Foto</label>
+          <input type="file" id="foto" name="foto" accept="image/*" class="mt-1 block w-full border border-gray-300 rounded px-3 py-2"/>
+        </div>
+
+        <div class="mt-4">
+          <label class="block text-sm font-medium text-gray-700">Ou tire uma foto:</label>
+          <video id="video" autoplay class="w-full rounded border border-gray-300 mt-2"></video>
+          <canvas id="canvas" class="hidden"></canvas>
+          <img id="photoPreview" src="" class="mt-2 w-full rounded" />
+          <input type="hidden" name="capturedImage" id="capturedImage" />
+        </div>
+
+        <div class="flex flex-col sm:flex-row justify-center sm:justify-end items-center gap-2 px-4 py-4">
+          <button type="button" id="captureBtn" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 text-sm w-full sm:w-auto">
+            Capturar Foto
+          </button>
+          <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-sm w-full sm:w-auto">
+            Cadastrar
+          </button>
+        </div>
+      </form>
+    </main>
+  </div>
+
+  <!-- Scripts -->
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const toggleButton = document.getElementById("menuBtn");
+      const sidebar = document.getElementById("sidebar");
+
+      if (toggleButton && sidebar) {
+        toggleButton.addEventListener("click", () => {
+          sidebar.classList.toggle("-translate-x-full");
+        });
+      }
+    });
+
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const captureBtn = document.getElementById('captureBtn');
+    const photoPreview = document.getElementById('photoPreview');
+    const capturedImage = document.getElementById('capturedImage');
+
+    navigator.mediaDevices.getUserMedia({ video: true })
+      .then(stream => {
+        video.srcObject = stream;
+      })
+      .catch(err => {
+        console.error("Erro ao acessar a câmera:", err);
+      });
+
+    captureBtn.addEventListener('click', () => {
+      const context = canvas.getContext('2d');
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      context.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const imageData = canvas.toDataURL('image/png');
+      photoPreview.src = imageData;
+      capturedImage.value = imageData;
+    });
+  </script>
+
+</body>
+</html>

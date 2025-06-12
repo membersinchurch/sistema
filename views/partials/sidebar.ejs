@@ -1,0 +1,37 @@
+ <!-- Botão hambúrguer -->
+  <button id="menuBtn" class="sm:hidden fixed top-4 left-4 z-50 p-2 bg-white rounded-full shadow-md focus:outline-none">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+    </svg>
+  </button>
+
+<!-- Sidebar -->
+  <aside id="sidebar" class="fixed sm:static top-0 left-0 w-64 h-full bg-white shadow-lg transform -translate-x-full sm:translate-x-0 transition-transform duration-300 z-40">
+    <nav class="p-4 space-y-4 text-sm text-gray-700">
+      <img src="https://img.icons8.com/ios-filled/100/4a90e2/church.png" alt="Logo" class="w-16 mx-auto mb-2" />
+      <h2 class="text-xl font-bold text-gray-700">Painel</h2>
+      <a href="/dashboard" class="block hover:text-blue-600">Dashboard</a>
+      <a href="/lista_membros" class="block hover:text-blue-600">Ver membros</a>
+      <a href="/cadastro_membros" class="block hover:text-blue-600">Cadastrar Membro</a>
+      <a href="/aniversariantes" class="block hover:text-blue-600">Aniversariantes do Mês</a>
+      <a href="/financas" class="block hover:text-blue-600">Financeiro</a>
+      <a href="/visitantes" class="block hover:text-blue-600">Visitantes</a>
+      <a href="/agenda" class="block hover:text-blue-600">Agenda</a>
+      <a href="/avisos" class="block hover:text-blue-600">Avisos</a>
+      <a href="/exportar/csv" class="block hover:text-blue-600">Exportar CSV</a>
+      <a href="/exportar/pdf" class="block hover:text-blue-600">Exportar PDF</a>
+      <a href="/" class="block text-red-500 hover:text-red-700">Sair</a>
+    </nav>
+  </aside>
+
+<!-- JavaScript para abrir/fechar sidebar no mobile -->
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const menuBtn = document.getElementById("menu-btn");
+    const sidebar = document.getElementById("sidebar");
+
+    menuBtn.addEventListener("click", () => {
+      sidebar.classList.toggle("-translate-x-full");
+    });
+  });
+</script>

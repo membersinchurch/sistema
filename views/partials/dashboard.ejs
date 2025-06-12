@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Dashboard Principal</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gray-100 flex h-screen overflow-hidden">
+
+  <!-- Botão hambúrguer -->
+  <button id="menuBtn" class="sm:hidden fixed top-4 left-4 z-50 p-2 bg-white rounded-full shadow-md focus:outline-none">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+    </svg>
+  </button>
+
+  <!-- Sidebar -->
+  <aside id="sidebar" class="fixed sm:static top-0 left-0 w-64 h-full bg-white shadow-lg transform -translate-x-full sm:translate-x-0 transition-transform duration-300 z-40">
+    <nav class="p-4 space-y-4 text-sm text-gray-700">
+      <img src="https://img.icons8.com/ios-filled/100/4a90e2/church.png" alt="Logo" class="w-16 mx-auto mb-2" />
+      <h2 class="text-xl font-bold text-gray-700">Painel</h2>
+      <a href="/dashboard" class="block hover:text-blue-600">Dashboard</a>
+      <a href="/lista_membros" class="block hover:text-blue-600">Ver membros</a>
+      <a href="/cadastro" class="block hover:text-blue-600">Cadastrar Membro</a>
+      <a href="/aniversariantes" class="block hover:text-blue-600">Aniversariantes do Mês</a>
+      <a href="/financas" class="block hover:text-blue-600">Financeiro</a>
+      <a href="/exportar/csv" class="block hover:text-blue-600">Exportar CSV</a>
+      <a href="/exportar/pdf" class="block hover:text-blue-600">Exportar PDF</a>
+      <a href="/" class="block text-red-500 hover:text-red-700">Sair</a>
+    </nav>
+  </aside>
+
+  <script>
+  function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    sidebar.classList.toggle('-translate-x-full');
+  }
+</script>
+
+
+  <!-- Conteúdo principal -->
+  <main class="flex-1 p-4 overflow-y-auto mt-16 sm:mt-0">
+    <h1 class="text-2xl font-bold text-center text-gray-800 mb-4">Dashboard de Membros</h1>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <!-- Total de membros -->
+      <div class="bg-white shadow-lg rounded-xl p-6">
+        <h2 class="text-xl font-semibold text-gray-700 mb-2">Total de Membros</h2>
+        <p class="text-4xl text-blue-600"><%= totalMembros %></p>
+      </div>
+
+      <!-- Aniversários por mês -->
+      <div class="bg-white shadow-lg rounded-xl p-6">
+        <h2 class="text-xl font-semibold text-gray-700 mb-4">Aniversários por Mês</h2>
+        <canvas id="graficoMes"></canvas>
+      </div>
+
+      <!-- Faixa Etária -->
+      <div class="bg-white shadow-lg rounded-xl p-6">
+        <h2 class="text-xl font-semibold text-gray-700 mb-4">Faixa Etária</h2>
+        <canvas id="graficoFaixaEtaria"></canvas>
+      </div>
+
+      <!-- Sexo -->
+      <div class="bg-white shadow-lg rounded-xl p-6">
+        <h2 class="text-xl font-semibold text-gray-700 mb-4">Distribuição por Sexo</h2>
+        <canvas id="graficoSexo"></canvas>
+      </div>
+    </div>
+  </main>
+
+  <!-- Scripts -->
+  <script>
+    // Toggle Sidebar
+    const menuBtn = document.getElementById('menuBtn');
+    const sidebar = document.getElementById('sidebar');
+
+    menuBtn.addEventListener('click', () => {
+      sidebar.classList.toggle('-translate-x-full');
+    });
+
+    // Gráfico de Membros por Mês
+    const ctxMes = document.getElementById('graficoMes').getContext('2d');
+    new Chart(ctxMes, {
+      type: 'bar',
+      data: {
+        labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'],
+        datasets: [{
+          label: 'Membros por mês de nascimento',
+          data: <%- JSON.stringify(membrosPorMes || []) %>,
+          backgroundColor: 'rgba(59, 130, 246, 0.6)',
+          borderRadius: 5
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: { y: { beginAtZero: true } }
+      }
+    });
+
+    // Faixa Etária
+    const ctxFaixa = document.getElementById('graficoFaixaEtaria').getContext('2d');
+    new Chart(ctxFaixa, {
+      type: 'pie',
+      data: {
+        labels: ['0-18', '19-30', '31-50', '51+'],
+        datasets: [{
+          data: <%- JSON.stringify(faixaEtaria || []) %>,
+          backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444']
+        }]
+      }
+    });
+
+    // Sexo
+    const ctxSexo = document.getElementById('graficoSexo').getContext('2d');
+    new Chart(ctxSexo, {
+      type: 'doughnut',
+      data: {
+        labels: ['Masculino', 'Feminino'],
+        datasets: [{
+          data: [
+           <%= Number(porSexo.Masculino || 0) %>, 
+           <%= Number(porSexo.Feminino || 0) %>
+          ],
+          backgroundColor: ['#2563eb', '#ec4899', '#9ca3af']
+        }]
+      }
+    });
+  </script>
+</body>
+</html>

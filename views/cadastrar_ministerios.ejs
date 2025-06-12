@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <%- include('partials/head') %>
+</head>
+<body>
+  <%- include('partials/sidebar') %>
+  <main class="p-6">
+    <h1 class="text-xl font-bold mb-4">Cadastrar Ministério</h1>
+    <form action="/ministerios" method="POST" class="space-y-4">
+      <input type="text" name="nome" placeholder="Nome do ministério" required class="w-full p-2 border rounded" />
+      <textarea name="descricao" placeholder="Descrição (opcional)" class="w-full p-2 border rounded"></textarea>
+      <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Salvar</button>
+    </form>
+    <label for="ministerio">Ministério:</label>
+<select name="ministerio" id="ministerio" class="border rounded p-2 w-full mb-4">
+  <option value="">Selecione um ministério</option>
+  <% ministerios.forEach((m) => { %>
+    <option value="<%= m.nome %>"><%= m.nome %></option>
+  <% }) %>
+</select>
+
+  </main>
+</body>
+</html>

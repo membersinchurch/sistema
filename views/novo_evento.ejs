@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Novo Evento</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-6">
+  <div class="max-w-xl mx-auto bg-white p-6 rounded shadow">
+    <h2 class="text-xl font-bold mb-4">Novo Evento</h2>
+
+    <form action="/eventos" method="POST" class="space-y-4">
+      <div>
+        <label class="block text-sm font-medium">Título do Evento</label>
+        <input type="text" name="titulo" required class="w-full border px-3 py-2 rounded" />
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium">Descrição</label>
+        <textarea name="descricao" class="w-full border px-3 py-2 rounded"></textarea>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium">Local</label>
+        <input type="text" name="local" class="w-full border px-3 py-2 rounded" />
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium">Data e Hora de Início</label>
+        <input type="datetime-local" name="data_inicio" required class="w-full border px-3 py-2 rounded" />
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium">Data e Hora de Fim</label>
+        <input type="datetime-local" name="data_fim" class="w-full border px-3 py-2 rounded" />
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium">Categoria</label>
+        <select name="categoria" class="w-full border px-3 py-2 rounded">
+          <option value="Culto">Culto</option>
+          <option value="Reunião">Reunião</option>
+          <option value="Vigília">Vigília</option>
+          <option value="Evento Especial">Evento Especial</option>
+        </select>
+      </div>
+
+      <div class="flex justify-between">
+        <a href="/dashboard" class="bg-gray-500 text-white px-4 py-2 rounded">Voltar</a>
+        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Salvar Evento</button>
+      </div>
+    </form>
+  </div>
+</body>
+</html>
