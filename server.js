@@ -2032,9 +2032,7 @@ app.post('/esqueci-senha', (req, res) => {
           return res.render('esqueci-senha', { error: 'Erro ao salvar o token.', success: null });
         }
 
-        const baseUrl = process.env.BASE_URL || 'http://localhost:3000'; // Usa a URL do Railway ou localhost
-        const token = "abc123-token-gerado-pelo-sistema"; // Substitua pela variável do seu token real
-        const resetLink = `${baseUrl}/nova-senha/${token}`;
+        const resetLink = `https://sistema-production-7be0.up.railway.app//${token}`;
 
         const transporter = nodemailer.createTransport({
           service: 'gmail',
