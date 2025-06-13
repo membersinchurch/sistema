@@ -122,6 +122,10 @@ app.get('/teste', (req, res) => {
   res.send('A rota /teste está funcionando!');
 });
 
+app.get('/verifica-views', (req, res) => {
+  res.render('teste'); // Isso tenta renderizar views/teste.ejs
+});
+
 
 
 app.get('/', (req, res) => {
@@ -2028,7 +2032,9 @@ app.post('/esqueci-senha', (req, res) => {
           return res.render('esqueci-senha', { error: 'Erro ao salvar o token.', success: null });
         }
 
-        const resetLink = `http://localhost:3000/nova-senha/${token}`;
+        const baseUrl = process.env.BASE_URL || 'http://localhost:3000'; // Usa a URL do Railway ou localhost
+        const token = "abc123-token-gerado-pelo-sistema"; // Substitua pela variável do seu token real
+        const resetLink = `${baseUrl}/nova-senha/${token}`;
 
         const transporter = nodemailer.createTransport({
           service: 'gmail',
