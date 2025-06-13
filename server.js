@@ -20,12 +20,12 @@ const bodyParser = require('body-parser');
 
 // Configuração do banco PostgreSQL
 const pgPool = new Pool({
-  user: 'postgres',
-  host: 'localhost',
-  database: 'membersinchurch',
-  password: 'mclRaposo2025@', // altere conforme seu ambiente
-  port: 5432
+  connectionString: 'postgresql://postgres:bFDBiRAwIPmtQqtkRBDfwfZpFHvqaViS@metro.proxy.rlwy.net:50378/railway',
+  ssl: {
+    rejectUnauthorized: false
+  }
 });
+
 
 
 // Primeiro declara storage
@@ -946,8 +946,10 @@ app.get("/logout", verificarAutenticacao, (req, res) => {
   });
 });
 
-app.listen(3000, () => {
-  console.log("Servidor rodando em http://localhost:3000");
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
+  console.log(`🚀 Servidor rodando na porta ${PORT}`);
 });
 
 // ⏰ Agendamento diário às 8h
