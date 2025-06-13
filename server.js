@@ -2032,13 +2032,14 @@ app.post('/esqueci-senha', (req, res) => {
           return res.render('esqueci-senha', { error: 'Erro ao salvar o token.', success: null });
         }
 
-        const resetLink = `https://sistema-production-7be0.up.railway.app/${token}`;
+        const resetLink = `https://sistema-production-7be0.up.railway.app/nova-senha/${token}`;
 
         const transporter = nodemailer.createTransport({
           service: 'gmail',
           auth: {
             user: 'naoresponda.recuperasenha@gmail.com',
             pass: 'crfo dive cghr rdch',
+
           },
         });
 
