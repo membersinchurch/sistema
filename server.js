@@ -118,6 +118,10 @@ function verificarQualquerAutenticado(req, res, next) {
   }
 }
 
+app.get('/teste', (req, res) => {
+  res.send('A rota /teste está funcionando!');
+});
+
 
 
 app.get('/', (req, res) => {
