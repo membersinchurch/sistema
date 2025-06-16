@@ -157,6 +157,7 @@ app.post('/login', async (req, res) => {
       const match = await bcrypt.compare(senha, admin.senha);
       if (match) {
         req.session.adminId = admin.id;
+        req.session.adminNome = admin.nome; 
         return res.redirect('/dashboard');
       }
     }
@@ -249,6 +250,7 @@ app.post('/lista_membros', verificarAutenticacao, async (req, res) => {
 
 app.get('/dashboard', verificarAutenticacao, async (req, res) => { 
      const adminId = req.session.adminId || req.session.usuarioAdminId; // ✅ aqui o ajuste
+  const nomeAdmin = req.session.adminNome || 'Visitante';
 
   if (!adminId) return res.redirect('/login');
 
@@ -346,6 +348,7 @@ app.get('/dashboard', verificarAutenticacao, async (req, res) => {
       total: total.toFixed(2),
       membrosPorMes,
       faixaEtaria: faixaEtariaArray,
+      nomeUsuario: nomeAdmin, // <-- Envia o nome para o HTML
       porSexo: porSexo.rows[0]
     });
 
