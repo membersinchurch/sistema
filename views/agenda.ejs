@@ -63,27 +63,32 @@
 
     /* ===== RESPONSIVIDADE DOS BOTOES NO TOPO (CELULAR) ===== */
     @media (max-width: 640px) {
-      /* Container dos botões */
-      .fc-toolbar-chunk {
-        display: flex !important;
-        flex-direction: column !important;
-        align-items: center;
-        gap: 8px;
-        margin-bottom: 8px;
-      }
+    .fc-header-toolbar {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
 
       /* Botões do FullCalendar com largura total */
-      .fc-toolbar-chunk > .fc-button {
-        width: 100% !important;
-        box-sizing: border-box;
-      }
+      .fc-toolbar-chunk {
+      width: 100%;
+      display: flex !important;
+      justify-content: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
 
       /* Centraliza e espaça título do calendário */
       .fc-toolbar-title {
-        font-size: 1.25rem;
-        margin-bottom: 8px;
-        text-align: center;
-      }
+      font-size: 1.125rem !important; /* Reduz o tamanho da fonte */
+      text-align: center;
+    }
+
+    .fc-button {
+      flex: 1 1 auto;
+      min-width: 100px;
+    }
     }
   </style>
 </head>
