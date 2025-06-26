@@ -252,9 +252,15 @@ app.get('/dashboard', verificarAutenticacao, async (req, res) => {
      const adminId = req.session.adminId || req.session.usuarioAdminId; // ✅ aqui o ajuste
   const nomeAdmin = req.session.adminNome || 'Visitante';
 
+  
+
   if (!adminId) return res.redirect('/login');
 
  try {
+    // Buscar nome da igreja
+    const resultadoIgreja = await pgPool.query('SELECT nome_igreja FROM admins WHERE id = $1', [adminId]);
+    const nomeIgreja = resultadoIgreja.rows[0]?.nome_igreja || 'Sua Igreja';
+
     // Buscar membros
     const resultadoMembros = await pgPool.query('SELECT * FROM membros WHERE admin_id = $1', [adminId]);
     const membros = resultadoMembros.rows;
@@ -340,8 +346,10 @@ app.get('/dashboard', verificarAutenticacao, async (req, res) => {
       console.log('porSexo:', porSexo.rows[0]);
 
 
+
     // Renderiza a página com todos os dados
     res.render('dashboard', {
+      nomeIgreja,
       membros,
       totalMembros,
       lancamentos,
@@ -1096,13 +1104,18 @@ app.get('/enviar-parabens/:id', verificarAutenticacao, (req, res) => {
 
   const membroId = req.params.id;
 
-  pgPool.query('SELECT * FROM membros WHERE id = $1', [membroId], (err, result) => {
+  pgPool.query('SELECT m.*, a.nome_igreja FROM membros m JOIN admins a ON m.admin_id = a.id WHERE m.id = $1 AND m.admin_id = $2',
+
+    [membroId, adminId], (err, result) => {
+
     if (err || result.rowCount === 0) {
       console.error(err);
       return res.status(500).send('Erro ao buscar o membro.');
+
     }
 
     const membro = result.rows[0];
+    const nomeIgreja = membro.nome_igreja;
 
     const transporter = nodemailer.createTransport({
       service: 'gmail',
@@ -1116,7 +1129,28 @@ app.get('/enviar-parabens/:id', verificarAutenticacao, (req, res) => {
       from: 'Members In Church <membersinchurch@gmail.com>',
       to: membro.email,
       subject: `🎉 Feliz Aniversário, ${membro.nome}!`,
-      html: `<!-- email HTML aqui, com ${membro.nome} etc -->`
+      html: `
+  <div style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px;">
+    <div style="background-color: #ffffff; padding: 20px; border-radius: 10px; max-width: 600px; margin: auto;">
+      <h2 style="color: #4CAF50; text-align: center;">🎉 Feliz Aniversário, ${membro.nome}!</h2>
+      <p style="font-size: 16px; color: #333;">
+        Que o Senhor continue abençoando sua vida com muita saúde, paz, amor e alegria.
+      </p>
+      <p style="font-size: 16px; color: #333;">
+        Hoje celebramos o dom da sua vida e agradecemos a Deus por você fazer parte da nossa comunidade.
+      </p>
+      <p style="font-size: 16px; color: #333;">
+        Receba nossos parabéns e um forte abraço de todos nós da <strong>${nomeIgreja}</strong>!
+
+      </p>
+      <br />
+      <p style="font-size: 14px; color: #888; text-align: center;">
+        Este é um e-mail automático enviado pela plataforma Members In Church.
+      </p>
+    </div>
+  </div>
+`
+
     };
 
     transporter.sendMail(mailOptions, (error, info) => {
