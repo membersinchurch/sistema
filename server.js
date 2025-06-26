@@ -2033,6 +2033,64 @@ app.post('/avisos/:id/delete', verificarAutenticacao, async (req, res) => {
   }
 });
 
+// 📄 Rota: exibir grupos caseiros
+app.get('/grupos', verificarAutenticacao, async (req, res) => {
+    const adminId = req.session.adminId || req.session.usuarioAdminId;
+
+  try {
+    const { rows } = await pgPool.query('SELECT * FROM grupos_caseiros WHERE admin_id = $1 ORDER BY id DESC', [adminId]);
+
+    
+    res.render('grupos', { 
+      grupos: rows,
+      nomeIgreja: req.session.nomeIgreja
+
+     });
+  } catch (err) {
+    console.error('Erro ao buscar grupos:', err);
+    res.send('Erro ao buscar grupos');
+  }
+});
+
+// 📄 Rota: exibir formulário de cadastro
+app.get('/cadastrar_grupo', verificarAutenticacao, (req, res) => {
+  const adminId = req.session.adminId || req.session.usuarioAdminId;
+  res.render('cadastrar_grupo');
+});
+
+// 📄 Rota: salvar novo grupo no banco
+app.post('/grupos/salvar', verificarAutenticacao, async (req, res) => {
+  
+  const { nome, lideres, anfitrioes, dia, horario, endereco, telefone } = req.body;
+  const adminId = req.session.adminId || req.session.usuarioAdminId;  
+  
+  try {
+    await pgPool.query(`
+      INSERT INTO grupos_caseiros (nome, lideres, anfitrioes, dia_reuniao, horario, endereco, admin_id, telefone)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+    `, [nome, lideres, anfitrioes, dia, horario, endereco, adminId, telefone]);
+    res.redirect('/grupos');
+  } catch (err) {
+    console.error('Erro ao salvar grupo:', err);
+    res.send('Erro ao salvar grupo');
+  }
+});
+
+app.post('/grupos/excluir/:id', verificarAutenticacao, async (req, res) => {
+  const adminId = req.session.adminId || req.session.usuarioAdminId;
+  const grupoId = req.params.id;
+
+  try {
+    // Garante que só o dono do grupo pode excluir
+    await pgPool.query('DELETE FROM grupos_caseiros WHERE id = $1 AND admin_id = $2', [grupoId, adminId]);
+    res.redirect('/grupos');
+  } catch (err) {
+    console.error('Erro ao excluir grupo:', err);
+    res.send('Erro ao excluir grupo');
+  }
+});
+
+
 
 const crypto = require('crypto');
 

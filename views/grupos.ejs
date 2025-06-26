@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="pt-br" class="h-full">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Grupos Caseiros</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="h-screen overflow-hidden flex bg-gray-100">
+
+  <!-- Sidebar -->
+  <aside id="sidebar" class="w-64 bg-white shadow-lg h-screen hidden sm:flex flex-col justify-between fixed left-0 top-0 z-50">
+    <nav class="p-4 text-sm text-gray-700 flex flex-col justify-between h-full">
+      <div class="space-y-4">
+        <img src="https://img.icons8.com/ios-filled/100/4a90e2/church.png" alt="Logo" class="w-16 mx-auto mb-2" />
+        <div class="text-center text-sm text-gray-600 mb-4">
+          Olá, <strong><%= nomeIgreja %></strong>!
+        </div>
+
+        <h2 class="text-xl font-bold text-gray-700">Painel</h2>
+        <a href="/dashboard" class="block hover:text-blue-600">Dashboard</a>
+        <a href="/lista_membros" class="block hover:text-blue-600">Ver membros</a>
+        <a href="/cadastro_membros" class="block hover:text-blue-600">Cadastrar Membro</a>
+        <a href="/financas" class="block hover:text-blue-600">Financeiro</a>
+        <a href="/visitantes" class="block hover:text-blue-600">Visitantes</a>
+        <a href="/grupos" class="block hover:text-blue-600">Grupos Caseiros</a>
+        <a href="/aniversariantes" class="block hover:text-blue-600">Aniversariantes</a>
+        <a href="/agenda" class="block hover:text-blue-600">Agenda</a>
+        <a href="/avisos" class="block hover:text-blue-600">Avisos</a>
+        <a href="/cadastro" class="block hover:text-blue-600">Cadastrar Usuários</a>
+        <a href="/exportar/csv" class="block hover:text-blue-600">Exportar CSV</a>
+        <a href="/exportar/pdf" class="block hover:text-blue-600">Exportar PDF</a>
+        <a href="/" class="block text-red-500 hover:text-red-700">Sair</a>
+        <img src="/img/logo2.png" alt="Logotipo Members In Church" class="w-32 mx-auto opacity-80">
+      
+      </nav>
+    </div>
+  </aside>
+
+  <!-- Conteúdo principal -->
+  <main class="ml-0 sm:ml-64 flex-1 p-6 h-screen overflow-y-auto">
+
+    <!-- Cabeçalho com título e botão -->
+    <div class="flex items-center justify-between mb-6">
+      <h1 class="text-3xl font-bold text-gray-800">Grupos Caseiros</h1>
+      <a href="/cadastrar_grupo" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
+        + Cadastrar Novo Grupo
+      </a>
+    </div>
+
+    <!-- Grid de cards -->
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <% grupos.forEach(grupo => { %>
+        <div class="bg-white rounded-xl shadow-md p-5 hover:shadow-lg transition">
+          <h2 class="text-xl font-bold text-blue-700"><%= grupo.nome %></h2>
+          <p><strong>Líderes:</strong> <%= grupo.lideres %></p>
+          <p><strong>Anfitriões:</strong> <%= grupo.anfitrioes %></p>
+          <p><strong>Dia:</strong> <%= grupo.dia_reuniao %></p>
+          <p><strong>Horário:</strong> <%= grupo.horario %></p>
+          <p><strong>Endereço:</strong> <%= grupo.endereco %></p>
+          <p><strong>Telefone:</strong> <%= grupo.telefone %></p>
+
+          <!-- Botão de excluir -->
+          <form action="/grupos/excluir/<%= grupo.id %>" method="POST" onsubmit="return confirm('Tem certeza que deseja excluir este grupo?');">
+            <button class="mt-4 bg-red-600 text-white px-4 py-1 rounded hover:bg-red-700 transition">
+              Excluir
+            </button>
+          </form>
+        </div>
+      <% }) %>
+    </div>
+
+  </main>
+
+</body>
+</html>
