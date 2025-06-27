@@ -118,16 +118,15 @@
 
   <!-- Scripts -->
   <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      const toggleButton = document.getElementById("menuBtn");
-      const sidebar = document.getElementById("sidebar");
+  document.addEventListener("DOMContentLoaded", () => {
+    const toggleButton = document.getElementById("menuBtn");
+    const sidebar = document.getElementById("sidebar");
 
-      if (toggleButton && sidebar) {
-        toggleButton.addEventListener("click", () => {
-          sidebar.classList.toggle("-translate-x-full");
-        });
-      }
-    });
+    if (toggleButton && sidebar) {
+      toggleButton.addEventListener("click", () => {
+        sidebar.classList.toggle("-translate-x-full");
+      });
+    }
 
     const video = document.getElementById('video');
     const canvas = document.getElementById('canvas');
@@ -135,15 +134,29 @@
     const photoPreview = document.getElementById('photoPreview');
     const capturedImage = document.getElementById('capturedImage');
 
-    navigator.mediaDevices.getUserMedia({ video: true })
-      .then(stream => {
-        video.srcObject = stream;
-      })
-      .catch(err => {
-        console.error("Erro ao acessar a câmera:", err);
-      });
+    let streamStarted = false;
 
-    captureBtn.addEventListener('click', () => {
+    captureBtn.addEventListener('click', async () => {
+      // Ativar câmera apenas se ainda não estiver ativa
+      if (!streamStarted) {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+          video.srcObject = stream;
+          streamStarted = true;
+
+          // Espera um pequeno tempo para garantir que o vídeo carregue
+          setTimeout(() => {
+            capturarImagem();
+          }, 500);
+        } catch (err) {
+          console.error("Erro ao acessar a câmera:", err);
+        }
+      } else {
+        capturarImagem();
+      }
+    });
+
+    function capturarImagem() {
       const context = canvas.getContext('2d');
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
@@ -151,8 +164,10 @@
       const imageData = canvas.toDataURL('image/png');
       photoPreview.src = imageData;
       capturedImage.value = imageData;
-    });
-  </script>
+    }
+  });
+</script>
+
 
 </body>
 </html>
