@@ -6,38 +6,39 @@
   <title>Grupos Caseiros</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="h-screen overflow-hidden flex bg-gray-100">
+<body class="bg-gray-100 flex min-h-screen overflow-x-hidden">
+
+  <!-- Botão hambúrguer -->
+  <button id="menuBtn" class="sm:hidden fixed top-4 left-4 z-50 p-2 bg-white rounded-full shadow-md focus:outline-none">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+    </svg>
+  </button>
 
   <!-- Sidebar -->
-  <aside id="sidebar" class="w-64 bg-white shadow-lg h-screen hidden sm:flex flex-col justify-between fixed left-0 top-0 z-50">
-    <nav class="p-4 text-sm text-gray-700 flex flex-col justify-between h-full">
-      <div class="space-y-4">
-        <img src="https://img.icons8.com/ios-filled/100/4a90e2/church.png" alt="Logo" class="w-16 mx-auto mb-2" />
-        
-
-        <h2 class="text-xl font-bold text-gray-700">Painel</h2>
-        <a href="/dashboard" class="block hover:text-blue-600">Dashboard</a>
-        <a href="/lista_membros" class="block hover:text-blue-600">Ver membros</a>
-        <a href="/cadastro_membros" class="block hover:text-blue-600">Cadastrar Membro</a>
-        <a href="/financas" class="block hover:text-blue-600">Financeiro</a>
-        <a href="/visitantes" class="block hover:text-blue-600">Visitantes</a>
-        <a href="/grupos" class="block hover:text-blue-600">Grupos Caseiros</a>
-        <a href="/aniversariantes" class="block hover:text-blue-600">Aniversariantes</a>
-        <a href="/agenda" class="block hover:text-blue-600">Agenda</a>
-        <a href="/avisos" class="block hover:text-blue-600">Avisos</a>
-        <a href="/cadastro" class="block hover:text-blue-600">Cadastrar Usuários</a>
-        <a href="/exportar/csv" class="block hover:text-blue-600">Exportar CSV</a>
-        <a href="/exportar/pdf" class="block hover:text-blue-600">Exportar PDF</a>
-        <a href="/" class="block text-red-500 hover:text-red-700">Sair</a>
-        <img src="/img/logo2.png" alt="Logotipo Members In Church" class="w-32 mx-auto opacity-80">
-      
-      </nav>
-    </div>
+  <aside id="sidebar" class="fixed sm:static top-0 left-0 w-64 h-screen bg-white shadow-lg transform -translate-x-full sm:translate-x-0 transition-transform duration-300 z-40">
+    <nav class="p-4 space-y-4 text-sm text-gray-700">
+      <img src="https://img.icons8.com/ios-filled/100/4a90e2/church.png" alt="Logo" class="w-16 mx-auto mb-2" />
+      <h2 class="text-xl font-bold text-gray-700">Painel</h2>
+      <a href="/dashboard" class="block hover:text-blue-600">Dashboard</a>
+      <a href="/lista_membros" class="block hover:text-blue-600">Ver membros</a>
+      <a href="/cadastro_membros" class="block hover:text-blue-600">Cadastrar Membro</a>
+      <a href="/financas" class="block hover:text-blue-600">Financeiro</a>
+      <a href="/visitantes" class="block hover:text-blue-600">Visitantes</a>
+      <a href="/grupos" class="block hover:text-blue-600">Grupos Caseiros</a>
+      <a href="/aniversariantes" class="block hover:text-blue-600">Aniversariantes</a>
+      <a href="/agenda" class="block hover:text-blue-600">Agenda</a>
+      <a href="/avisos" class="block hover:text-blue-600">Avisos</a>
+      <a href="/cadastro" class="block hover:text-blue-600">Cadastrar Usuários</a>
+      <a href="/exportar/csv" class="block hover:text-blue-600">Exportar CSV</a>
+      <a href="/exportar/pdf" class="block hover:text-blue-600">Exportar PDF</a>
+      <a href="/" class="block text-red-500 hover:text-red-700">Sair</a>
+      <img src="/img/logo2.png" alt="Logotipo Members In Church" class="w-32 mx-auto opacity-80">
+    </nav>
   </aside>
 
   <!-- Conteúdo principal -->
-  <main class="ml-0 sm:ml-64 flex-1 p-6 h-screen overflow-y-auto">
-
+  <main class="flex-1 ml-0 sm:ml-64 p-6 overflow-y-auto min-h-screen">
     <!-- Cabeçalho com título e botão -->
     <div class="flex items-center justify-between mb-6">
       <h1 class="text-3xl font-bold text-gray-800 text-center">Grupos Caseiros</h1>
@@ -67,8 +68,20 @@
         </div>
       <% }) %>
     </div>
-
   </main>
 
+  <!-- Scripts -->
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const toggleButton = document.getElementById("menuBtn");
+      const sidebar = document.getElementById("sidebar");
+
+      if (toggleButton && sidebar) {
+        toggleButton.addEventListener("click", () => {
+          sidebar.classList.toggle("-translate-x-full");
+        });
+      }
+    });
+  </script>
 </body>
 </html>
