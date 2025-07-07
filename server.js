@@ -56,6 +56,8 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 
 
+
+
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
@@ -65,6 +67,12 @@ app.use(session({
   saveUninitialized: false,
   cookie: { secure: false } 
 }));
+
+app.use((req, res, next) => {
+  res.locals.cargoUsuario = req.session && req.session.usuario ? req.session.usuario.cargo : null;
+  res.locals.isAdmin = req.session && req.session.adminId ? true : false;
+  next();
+});
 
 function verificarAdmin(req, res, next) {
   if (req.session.adminId) {
@@ -84,19 +92,29 @@ function obterAdminId(req) {
   return null;
 }
 
-function verificarSessao(req, res, next) {
-  if (req.session && (req.session.adminId || (req.session.usuario && req.session.usuario.adminId))) {
-    next();
-  } else {
-    res.redirect('/login');
-  }
+function verificarCargo(cargosPermitidos) {
+  return (req, res, next) => {
+    if (req.session.adminId) return next();
+    if (!req.session.usuario) {
+      return res.redirect('/login_usuario');
+    }
+
+    const { cargo } = req.session.usuario;
+
+    if (cargosPermitidos.includes(cargo)) {
+      return next();
+    }
+
+    return res.status(403).send('Acesso negado: você não tem permissão para acessar esta página.');
+  };
 }
+
 
 function verificarAutenticacao(req, res, next) {
   if (req.session.adminId || req.session.usuarioId) {
     return next();
   } else {
-    res.redirect('/login');
+    res.redirect('/login_usuario');
   }
 }
 
@@ -169,13 +187,67 @@ app.post('/login', async (req, res) => {
   }
 });
 
+app.post('/login_usuario', async (req, res) => {
+  const email = req.body.email.trim();
+  const senha = req.body.senha.trim();
+
+  try {
+    const result = await pgPool.query(
+      'SELECT * FROM usuarios WHERE email = $1',
+      [email]
+    );
+
+    if (result.rows.length === 0) {
+      return res.render('login_usuario', { error: 'Usuário não encontrado' });
+    }
+
+    const usuario = result.rows[0];
+
+    const match = await bcrypt.compare(senha, usuario.senha);
+    if (!match) {
+      return res.render('login_usuario', { error: 'Senha incorreta' });
+    }
+
+    // ✅ Salvar dados importantes na sessão
+    req.session.usuarioId = usuario.id;
+    req.session.usuario = {
+      id: usuario.id,
+      nome: usuario.nome,
+      email: usuario.email,
+      cargo: usuario.cargo,
+      admin_id: usuario.admin_id // ESSENCIAL para saber de qual igreja ele é
+    };
+
+    console.log('Sessão do usuário:', req.session.usuario);
+
+
+    res.redirect('/dashboard'); // ou outro caminho que desejar
+
+  } catch (err) {
+    console.error('Erro ao fazer login de usuário:', err);
+    res.render('login_usuario', { error: 'Erro interno no servidor' });
+  }
+});
+
+app.get('/logout', verificarAutenticacao, (req, res) => {
+  req.session.destroy(err => {
+    if (err) {
+      console.error('Erro ao destruir sessão:', err);
+      return res.status(500).send('Erro ao sair.');
+    }
+    res.redirect('/login_usuario'); // ou /login_usuario se quiser ir pra login de usuário
+  });
+});
+
+
+
 // Rota para exibir a lista de membros
 app.get('/lista_membros', verificarAutenticacao, async (req, res) => {
-     const adminId = req.session.adminId || req.session.usuarioAdminId; // ✅ aqui o ajuste
+ const adminId = req.session.adminId || (req.session.usuario && req.session.usuario.admin_id);
 
   if (!adminId) return res.redirect('/login');
 
-  try {
+  try { 
     const result = await pgPool.query(`
       SELECT membros.*, ministerios.nome AS ministerio_nome
       FROM membros
@@ -185,7 +257,10 @@ app.get('/lista_membros', verificarAutenticacao, async (req, res) => {
 
     const membros = result.rows;
 
-    res.render('lista_membros', { membros });
+    res.render('lista_membros', { 
+      membros: result.rows,
+      cargoUsuario: req.session.usuario?.cargo || 'admin' // 👈 adiciona isso
+     });
   } catch (err) {
     console.error('Erro ao buscar membros:', err);
     res.status(500).send('Erro ao buscar membros');
@@ -230,7 +305,7 @@ app.get('/cadastrar-ministerio', (req, res) => {
 
 app.post('/lista_membros', verificarAutenticacao, async (req, res) => {
   const { nome, data_nascimento, sexo, telefone, email } = req.body;
-  const adminId = req.session.adminId || req.session.usuarioId;
+  const adminId = req.session.adminId || (req.session.usuario && req.session.usuario.admin_id);
 
   try {
     const query = `
@@ -248,14 +323,14 @@ app.post('/lista_membros', verificarAutenticacao, async (req, res) => {
 
 // Rota do dashboard - acessível tanto por administradores quanto usuários vinculados
 
-app.get('/dashboard', verificarAutenticacao, async (req, res) => { 
-     const adminId = req.session.adminId || req.session.usuarioAdminId; // ✅ aqui o ajuste
-  const nomeAdmin = req.session.adminNome || 'Visitante';
+app.get('/dashboard', verificarAutenticacao, async (req, res) => {
+  const adminId = req.session.adminId || (req.session.usuario && req.session.usuario.admin_id);
 
-  
+  if (!adminId) {
+    return res.status(403).send('Administrador não identificado.');
+  }
 
-  if (!adminId) return res.redirect('/login');
-
+  const nomeAdmin = req.session.adminNome || (req.session.usuario && req.session.usuario.nome) || 'Visitante';
  try {
     // Buscar nome da igreja
     const resultadoIgreja = await pgPool.query('SELECT nome_igreja FROM admins WHERE id = $1', [adminId]);
@@ -357,7 +432,8 @@ app.get('/dashboard', verificarAutenticacao, async (req, res) => {
       membrosPorMes,
       faixaEtaria: faixaEtariaArray,
       nomeUsuario: nomeAdmin, // <-- Envia o nome para o HTML
-      porSexo: porSexo.rows[0]
+      porSexo: porSexo.rows[0],
+      cargoUsuario: req.session.usuario?.cargo || 'admin'
     });
 
   } catch (err) {
@@ -367,12 +443,13 @@ app.get('/dashboard', verificarAutenticacao, async (req, res) => {
 });
 
 
-app.get('/financas', async (req, res) => {
-  if (!req.session.adminId) {
-    return res.status(403).send('Acesso negado: apenas administradores podem acessar esta página.');
-  }
+app.get('/financas', verificarAutenticacao, verificarCargo(['pastores', 'tesouraria']), async (req, res) => {
+ const adminId = req.session.adminId || (req.session.usuario && req.session.usuario.admin_id);
 
-  const adminId = req.session.adminId;
+  if (!adminId) {
+    return res.status(403).send('Administrador não identificado.');
+  }  
+
   const { dataInicio, dataFim } = req.query;
 
   try {
@@ -583,8 +660,8 @@ app.get('/exportar/pdf', verificarAutenticacao, async (req, res) => {
 });
 
 //Rota para pagina cadastro de membros
-app.get('/cadastro_membros', verificarAutenticacao, async (req, res) => {
-  const adminId = req.session.adminId || req.session.usuarioAdminId;
+app.get('/cadastro_membros', verificarAutenticacao, verificarCargo(['pastores', 'tesouraria']), async (req, res) => {
+ const adminId = req.session.adminId || (req.session.usuario && req.session.usuario.admin_id);
 
   try {
     const resultado = await pgPool.query(
@@ -658,7 +735,7 @@ app.post("/cadastro_membros", verificarAutenticacao, upload.single("foto"), asyn
     }
 });
 
-app.get('/cadastro', async (req, res) => {
+app.get('/cadastro', verificarAutenticacao, verificarCargo(['pastores', 'tesouraria']), async (req, res) => {
   if (!req.session.adminId) {
     return res.redirect('/');
   }
@@ -685,7 +762,7 @@ app.get('/cadastro', async (req, res) => {
 
 
 app.post('/cadastro', async (req, res) => {
-  const { nome, email, telefone, data_nascimento, senha } = req.body;
+  const { nome, email, telefone, data_nascimento, senha, cargo } = req.body;
   const adminId = req.session.adminId;
 
   try {
@@ -693,8 +770,8 @@ app.post('/cadastro', async (req, res) => {
     const senhaCriptografada = await bcrypt.hash(senha, salt);
 
     const query = `
-      INSERT INTO usuarios (nome, email, telefone, data_nascimento, senha, admin_id)
-      VALUES ($1, $2, $3, $4, $5, $6)
+      INSERT INTO usuarios (nome, email, telefone, data_nascimento, senha, cargo, admin_id)
+      VALUES ($1, $2, $3, $4, $5, $6, $7)
       RETURNING id
     `;
     const values = [nome, email, telefone, data_nascimento, senhaCriptografada, adminId];
@@ -928,7 +1005,7 @@ app.post('/login_usuario', async (req, res) => {
     }
 
     // ✅ Login bem-sucedido
-    req.session.usuarioId = usuario.id;
+    req.session.usuarioId = usuario.id; 
     req.session.usuarioAdminId = usuario.admin_id;
     return res.redirect('/dashboard'); // ✅ return para encerrar a rota
 
@@ -1680,19 +1757,17 @@ app.post('/eventos/excluir/:id', verificarAutenticacao, async (req, res) => {
 
 
   app.get('/agenda', verificarAutenticacao, async (req, res) => {
-  const adminId = req.session.adminId || req.session.usuarioAdminId;
-
-
-  if (!adminId) {
-    return res.status(403).send("Administrador não autenticado.");
-  }
+const adminId = req.session.adminId || req.session.usuarioAdminId; // ✅ aqui o ajuste
 
   try {
     const { rows: eventos } = await pgPool.query(
       "SELECT * FROM eventos WHERE admin_id = $1", 
       [adminId]
     );
-    res.render("agenda", { eventos });
+    res.render("agenda", { 
+      eventos: eventos.rows,
+      cargoUsuario: req.session.usuario?.cargo || 'admin' // 👈 adiciona isso
+     });
   } catch (err) {
     console.error("Erro ao buscar eventos:", err);
     res.status(500).send("Erro ao buscar eventos.");
@@ -1746,8 +1821,11 @@ app.get('/visitantes', verificarAutenticacao, async (req, res) => {
       [adminId]
     );
     const visitantes = resultado.rows;
-
-    res.render('visitantes', { visitantes });
+    
+    res.render('visitantes', { 
+      visitantes: resultado.rows,
+      cargoUsuario: req.session.usuario?.cargo || 'admin' // 👈 adiciona isso
+     });
   } catch (err) {
     console.error('Erro ao buscar visitantes:', err);
     res.status(500).send('Erro ao carregar visitantes.');
@@ -2043,7 +2121,8 @@ app.get('/grupos', verificarAutenticacao, async (req, res) => {
     
     res.render('grupos', { 
       grupos: rows,
-      nomeIgreja: req.session.nomeIgreja
+      nomeIgreja: req.session.nomeIgreja,
+      cargoUsuario: req.session.usuario?.cargo || 'admin' // 👈 adiciona isso
 
      });
   } catch (err) {
