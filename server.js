@@ -2011,6 +2011,119 @@ app.delete('/eventos/:id', verificarAutenticacao, (req, res) => {
   });
 });
 
+app.get('/batismos', verificarAutenticacao, async (req, res) => {
+  const adminId = req.session.adminId || req.session.usuario?.admin_id;
+
+  try {
+    const { rows: batismos } = await pgPool.query(
+      'SELECT * FROM batismos WHERE admin_id = $1 ORDER BY data_batismo DESC',
+      [adminId]
+    );
+
+    const nomeUsuario = req.session.usuario?.nome || req.session.adminNome || 'Visitante';
+    const cargoUsuario = req.session.usuario?.cargo || '';
+    const isAdmin = !!req.session.adminId;
+
+    res.render('batismos', { batismos, nomeUsuario, cargoUsuario, isAdmin });
+  } catch (err) {
+    console.error('Erro ao buscar batismos:', err);
+    res.status(500).send('Erro ao carregar a página de batismos');
+  }
+});
+
+app.post('/batismos', verificarAutenticacao, async (req, res) => {
+ const adminId = req.session.adminId || (req.session.usuario && req.session.usuario.admin_id);
+  const { nome, email, telefone, data_batismo } = req.body;
+
+  try {
+    await pgPool.query(`
+      INSERT INTO batismos (nome, email, telefone, data_batismo, admin_id)
+      VALUES ($1, $2, $3, $4, $5)
+    `, [nome, email, telefone, data_batismo, adminId]);
+
+    res.redirect('/batismos');
+  } catch (err) {
+    console.error('Erro ao salvar batismo:', err);
+    res.status(500).send('Erro ao salvar candidato ao batismo');
+  }
+});
+
+
+app.get('/certificado/:id', verificarAutenticacao, async (req, res) => {
+  const { id } = req.params;
+ const adminId = req.session.adminId || (req.session.usuario && req.session.usuario.admin_id);
+
+  try {
+    const { rows } = await pgPool.query(
+      'SELECT * FROM batismos WHERE id = $1 AND admin_id = $2',
+      [id, adminId]
+    );
+
+    if (rows.length === 0) return res.status(404).send('Candidato não encontrado');
+
+    const candidato = rows[0];
+
+    const doc = new PDFDocument();
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `inline; filename=certificado_${candidato.nome}.pdf`);
+
+    doc.pipe(res);
+
+    doc.image('public/img/certificado_base.png', 0, 0, { width: 612 }); // use uma imagem base do certificado
+    doc.fontSize(20).text(candidato.nome, 400, 250); // ajuste a posição conforme o layout
+    doc.fontSize(14).text(
+      `Batizado em ${new Date(candidato.data_batismo).toLocaleDateString('pt-BR')}`,
+      350,
+      300
+    );
+
+    doc.end();
+  } catch (err) {
+    console.error('Erro ao gerar certificado:', err);
+    res.status(500).send('Erro ao gerar certificado');
+  }
+});
+
+app.post('/batismos', verificarAutenticacao, async (req, res) => {
+  const { nome, email, telefone, data_batismo } = req.body;
+  const adminId = req.session.adminId || (req.session.usuario && req.session.usuario.admin_id);
+
+  try {
+    await pgPool.query(`
+      INSERT INTO batismos (admin_id, nome, email, telefone, data_batismo)
+      VALUES ($1, $2, $3, $4, $5)
+    `, [adminId, nome, email, telefone, data_batismo]);
+
+    res.redirect('/batismos');
+  } catch (err) {
+    console.error('Erro ao salvar batismo:', err);
+    res.status(500).send('Erro ao salvar dados de batismo');
+  }
+});
+
+app.get('/certificado/:id', verificarAutenticacao, async (req, res) => {
+  const { id } = req.params;
+  const adminId = req.session.adminId || (req.session.usuario && req.session.usuario.admin_id);
+
+  try {
+    const result = await pgPool.query('SELECT * FROM batismos WHERE id = $1 AND admin_id = $2', [id, adminId]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).send('Certificado não encontrado');
+    }
+
+    const batismo = result.rows[0];
+    res.render('certificado_batismo', { batismo });
+
+  } catch (err) {
+    console.error('Erro ao gerar certificado:', err);
+    res.status(500).send('Erro ao gerar certificado');
+  }
+});
+
+
+
+
 
 // Rota para exibir os avisos
 app.get('/avisos', verificarAutenticacao, async (req, res) => {

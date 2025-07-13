@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Certificado de Batismo</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @media print {
+      button {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body class="flex items-center justify-center min-h-screen bg-blue-50">
+  <div class="bg-white shadow-lg rounded-lg p-10 text-center max-w-2xl border-4 border-blue-700">
+    <h1 class="text-3xl font-bold text-blue-800 mb-6">Certificado de Batismo</h1>
+
+    <p class="text-gray-700 text-lg mb-6">
+      Certificamos que <span class="font-bold text-xl text-blue-800"><%= batismo.nome %></span><br>
+      foi batizado em nome do Pai, do Filho e do Espírito Santo
+      no dia <span class="font-semibold"><%= new Date(batismo.data_batismo).toLocaleDateString('pt-BR') %></span>.
+    </p>
+
+    <p class="text-gray-600 mt-8">
+      ________________________________<br>
+      Assinatura do Pastor / Líder
+    </p>
+
+    <button onclick="window.print()" class="mt-6 bg-blue-700 text-white px-6 py-2 rounded hover:bg-blue-800">
+      Imprimir Certificado
+    </button>
+  </div>
+</body>
+</html>

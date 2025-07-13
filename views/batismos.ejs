@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Cadastro de Batismos</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen p-6">
+  <div class="max-w-4xl mx-auto bg-white shadow-md rounded-lg p-6">
+    <h1 class="text-2xl font-bold text-gray-700 mb-4">Cadastro de Batismos</h1>
+
+    <form action="/batismos" method="POST" class="space-y-4">
+      <div>
+        <label for="nome" class="block font-semibold">Nome completo</label>
+        <input type="text" name="nome" id="nome" required class="w-full border rounded p-2">
+      </div>
+
+      <div>
+        <label for="email" class="block font-semibold">E-mail</label>
+        <input type="email" name="email" id="email" class="w-full border rounded p-2">
+      </div>
+
+      <div>
+        <label for="telefone" class="block font-semibold">Telefone</label>
+        <input type="text" name="telefone" id="telefone" class="w-full border rounded p-2">
+      </div>
+
+      <div>
+        <label for="data_batismo" class="block font-semibold">Data do Batismo</label>
+        <input type="date" name="data_batismo" id="data_batismo" required class="w-full border rounded p-2">
+      </div>
+
+      <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+        Salvar Batismo
+      </button>
+    </form>
+
+    <% if (batismos && batismos.length > 0) { %>
+      <h2 class="text-xl font-bold mt-8 mb-2">Batismos Registrados</h2>
+      <ul class="space-y-2">
+        <% batismos.forEach(b => { %>
+  <li class="p-2 border rounded bg-gray-50">
+    <strong><%= b.nome %></strong> - <%= b.data_batismo.toLocaleDateString("pt-BR") %><br>
+    Email: <%= b.email %> | Telefone: <%= b.telefone %><br>
+
+    <a href="/certificado/<%= b.id %>" target="_blank"
+       class="inline-block mt-2 text-sm text-blue-600 hover:underline">
+       🖨️ Imprimir Certificado
+    </a>
+  </li>
+<% }) %>
+
+      </ul>
+    <% } %>
+  </div>
+</body>
+</html>

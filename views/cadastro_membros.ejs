@@ -21,20 +21,70 @@
     <nav class="p-4 space-y-4 text-sm text-gray-700">
       <img src="https://img.icons8.com/ios-filled/100/4a90e2/church.png" alt="Logo" class="w-16 mx-auto mb-2" />
       <h2 class="text-xl font-bold text-gray-700">Painel</h2>
-      <a href="/dashboard" class="block hover:text-blue-600">Dashboard</a>
-      <a href="/lista_membros" class="block hover:text-blue-600">Ver membros</a>
-      <a href="/cadastro_membros" class="block hover:text-blue-600">Cadastrar Membro</a>
-      <a href="/aniversariantes" class="block hover:text-blue-600">Aniversariantes do Mês</a>
-      <a href="/financas" class="block hover:text-blue-600">Financeiro</a>
-      <a href="/visitantes" class="block hover:text-blue-600">Visitantes</a>
-      <a href="/grupos" class="block hover:text-blue-600">Grupos Caseiros</a>
-      <a href="/agenda" class="block hover:text-blue-600">Agenda</a>
-      <a href="/avisos" class="block hover:text-blue-600">Avisos</a>
-      <a href="/cadastro" class="block hover:text-blue-600">Cadastrar Usuários</a>
-      <a href="/exportar/csv" class="block hover:text-blue-600">Exportar CSV</a>
-      <a href="/exportar/pdf" class="block hover:text-blue-600">Exportar PDF</a>
-      <a href="/logout" class="block text-red-500 hover:text-red-700">Sair</a>
-      <img src="/img/logo2.png" alt="Logotipo Members In Church" class="w-32 mx-auto opacity-80">
+
+<a href="/dashboard" class="flex items-center gap-2 hover:text-blue-600">
+  🏠 Dashboard
+</a>
+
+<a href="/lista_membros" class="flex items-center gap-2 hover:text-blue-600">
+  👥 Ver membros
+</a>
+
+<% if (isAdmin || cargoUsuario === 'tesouraria' || cargoUsuario === 'pastores') { %>
+<a href="/cadastro_membros" class="flex items-center gap-2 hover:text-blue-600">
+  ➕ Cadastrar Membro
+</a>
+
+<a href="/financas" class="flex items-center gap-2 hover:text-blue-600">
+  💰 Financeiro
+</a>
+<% } %>
+
+<a href="/visitantes" class="flex items-center gap-2 hover:text-blue-600">
+  🙋 Visitantes
+</a>
+
+<a href="/grupos" class="flex items-center gap-2 hover:text-blue-600">
+  🏠 Grupos Caseiros
+</a>
+
+<a href="/aniversariantes" class="flex items-center gap-2 hover:text-blue-600">
+  🎂 Aniversariantes
+</a>
+
+<a href="/agenda" class="flex items-center gap-2 hover:text-blue-600">
+  📅 Agenda
+</a>
+
+<a href="/avisos" class="flex items-center gap-2 hover:text-blue-600">
+  📢 Avisos
+</a>
+
+<a href="/batismos" class="flex items-center gap-2 hover:text-blue-600">
+  💧 Batismos
+</a>
+
+
+
+<% if (isAdmin || cargoUsuario === 'tesouraria' || cargoUsuario === 'pastores') { %>
+<a href="/cadastro" class="flex items-center gap-2 hover:text-blue-600">
+  👤 Cadastrar Usuários
+</a>
+
+<a href="/exportar/csv" class="flex items-center gap-2 hover:text-blue-600">
+  📄 Exportar CSV
+</a>
+
+<a href="/exportar/pdf" class="flex items-center gap-2 hover:text-blue-600">
+  📄 Exportar PDF
+</a>
+<% } %>
+
+<a href="/logout" class="flex items-center gap-2 text-red-500 hover:text-red-700">
+  🚪 Sair
+</a>
+
+<img src="/img/logo2.png" alt="Logotipo Members In Church" class="w-32 mx-auto opacity-80">
     </nav>
   </aside>
 
