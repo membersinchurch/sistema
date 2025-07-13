@@ -2173,7 +2173,7 @@ app.post('/avisos', verificarAutenticacao, async (req, res) => {
 
 // Marcar/desmarcar aviso como concluído
 app.post('/avisos/:id/toggle', verificarAutenticacao, async (req, res) => {
-  const adminId = req.session.adminId || req.session.usuarioAdminId; // ✅ aqui 
+ const adminId = req.session.adminId || (req.session.usuario && req.session.usuario.admin_id);
   const avisoId = parseInt(req.params.id);
 
   try {
@@ -2207,7 +2207,7 @@ app.post('/avisos/:id/toggle', verificarAutenticacao, async (req, res) => {
 
 // Excluir aviso
 app.post('/avisos/:id/delete', verificarAutenticacao, async (req, res) => {
-  const adminId = req.session.adminId || req.session.usuarioAdminId; // ✅ aqui o ajuste
+ const adminId = req.session.adminId || (req.session.usuario && req.session.usuario.admin_id);
 
   const avisoId = parseInt(req.params.id);
 
