@@ -2013,7 +2013,7 @@ app.delete('/eventos/:id', verificarAutenticacao, (req, res) => {
 
 // Rota para exibir os avisos
 app.get('/avisos', verificarAutenticacao, async (req, res) => {
-  const adminId = req.session.adminId || req.session.usuarioAdminId; // ✅ aqui o ajuste
+ const adminId = req.session.adminId || (req.session.usuario && req.session.usuario.admin_id);
 
   try {
 
@@ -2035,7 +2035,7 @@ app.get('/avisos', verificarAutenticacao, async (req, res) => {
 
 // Adicionar novo aviso
 app.post('/avisos', verificarAutenticacao, async (req, res) => {
-    const adminId = req.session.adminId || req.session.usuarioAdminId; // ✅ aqui o ajuste
+ const adminId = req.session.adminId || (req.session.usuario && req.session.usuario.admin_id);
 
   const { texto } = req.body;
 
