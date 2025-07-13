@@ -686,7 +686,7 @@ app.get('/cadastro_membros', verificarAutenticacao, verificarCargo(['pastores', 
 // Rota POST de cadastro de membro
 // rota para cadastro
 app.post("/cadastro_membros", verificarAutenticacao, upload.single("foto"), async (req, res) => {
-       const adminId = req.session.adminId || req.session.usuarioAdminId; // ✅ aqui o ajuste
+ const adminId = req.session.adminId || (req.session.usuario && req.session.usuario.admin_id);
 
   const {
     nome,
