@@ -303,9 +303,10 @@ app.get('/cadastrar-ministerio', (req, res) => {
 
 
 
-app.post('/lista_membros', verificarAutenticacao, async (req, res) => {
+app.post('/lista_membros', verificarAutenticacao, verificarCargo, async (req, res) => {
+    const adminId = req.session.adminId || (req.session.usuario && req.session.usuario.admin_id);
+
   const { nome, data_nascimento, sexo, telefone, email } = req.body;
-  const adminId = req.session.adminId || (req.session.usuario && req.session.usuario.admin_id);
 
   try {
     const query = `
@@ -685,7 +686,7 @@ app.get('/cadastro_membros', verificarAutenticacao, verificarCargo(['pastores', 
 });
 // Rota POST de cadastro de membro
 // rota para cadastro
-app.post("/cadastro_membros", verificarAutenticacao, upload.single("foto"), async (req, res) => {
+app.post("/cadastro_membros", verificarAutenticacao, verificarCargo, upload.single("foto"), async (req, res) => {
  const adminId = req.session.adminId || (req.session.usuario && req.session.usuario.admin_id);
 
   const {
@@ -1246,7 +1247,7 @@ app.get('/enviar-parabens/:id', verificarAutenticacao, (req, res) => {
 
 
 app.post('/cadastro_membros', verificarAutenticacao, upload.single("foto"), async (req, res) => {
-         const adminId = req.session.adminId || req.session.usuarioAdminId; // ✅ aqui o ajuste
+  const adminId = req.session.adminId || (req.session.usuario && req.session.usuario.admin_id);
 
   if (!req.session.adminId) return res.redirect("/");
 
@@ -1310,7 +1311,7 @@ app.get('/usuario/membros', verificarUsuarioAutenticado, (req, res) => {
 // Página de edição de membro
 // Rota GET para exibir o formulário de edição
 app.get("/editar/:id", verificarAutenticacao, async (req, res) => {
-       const adminId = req.session.adminId || req.session.usuarioAdminId; // ✅ aqui o ajuste
+  const adminId = req.session.adminId || (req.session.usuario && req.session.usuario.admin_id);
 
     console.log('Sessão atual:', req.session);
 
@@ -1349,7 +1350,7 @@ app.get("/editar/:id", verificarAutenticacao, async (req, res) => {
 // Rota POST para atualizar o membro
 // Rota POST /editar/:id
 app.post('/editar/:id', verificarAutenticacao, upload.single('foto'), async (req, res) => {
-         const adminId = req.session.adminId || req.session.usuarioAdminId; // ✅ aqui o ajuste
+  const adminId = req.session.adminId || (req.session.usuario && req.session.usuario.admin_id);
 
   const id = req.params.id;
 
@@ -1435,7 +1436,7 @@ app.post('/editar/:id', verificarAutenticacao, upload.single('foto'), async (req
 
 
 app.post("/excluir/:id", verificarAutenticacao, async (req, res) => {
-  const adminId = req.session.adminId || req.session.usuarioAdminId;
+  const adminId = req.session.adminId || (req.session.usuario && req.session.usuario.admin_id);
 
   try {
     // Exclui apenas membros que pertencem ao mesmo adminId da sessão
@@ -1593,12 +1594,12 @@ app.post("/cadastro-admin", (req, res) => {
 });
 
 app.get("/eventos/novo", verificarAutenticacao, (req, res) => {
-const adminId = req.session.adminId || req.session.usuarioAdminId;
+  const adminId = req.session.adminId || (req.session.usuario && req.session.usuario.admin_id);
   res.render("novo_evento");
 });
 
 app.post("/eventos", verificarAutenticacao, async (req, res) => {
-const adminId = req.session.adminId || req.session.usuarioAdminId;
+  const adminId = req.session.adminId || (req.session.usuario && req.session.usuario.admin_id);
   const { titulo, descricao, local, data_inicio, data_fim } = req.body;
 
   if (!adminId) {
@@ -1628,7 +1629,7 @@ const adminId = req.session.adminId || req.session.usuarioAdminId;
 
 
 app.get('/eventos/editar/:id', verificarAutenticacao, async (req, res) => {
-  const adminId = req.session.adminId || req.session.usuarioAdminId;
+  const adminId = req.session.adminId || (req.session.usuario && req.session.usuario.admin_id);
   const eventoId = req.params.id;
 
   try {
@@ -1650,7 +1651,7 @@ app.get('/eventos/editar/:id', verificarAutenticacao, async (req, res) => {
 
 // PUT /eventos/:id — editar evento via API REST
 app.put('/eventos/:id', verificarAutenticacao, async (req, res) => {
-  const adminId = req.session.adminId || req.session.usuarioAdminId;
+  const adminId = req.session.adminId || (req.session.usuario && req.session.usuario.admin_id);
   if (!adminId) {
     return res.status(401).json({ error: 'Não autenticado' });
   }
@@ -1694,7 +1695,7 @@ app.put('/eventos/:id', verificarAutenticacao, async (req, res) => {
 });
 
 app.post('/eventos/editar/:id', verificarAutenticacao, async (req, res) => {
-  const adminId = req.session.adminId || req.session.usuarioAdminId;
+  const adminId = req.session.adminId || (req.session.usuario && req.session.usuario.admin_id);
     console.log('➡️ Rota POST /eventos/editar chamada');
 
   const eventoId = req.params.id;
@@ -1736,7 +1737,7 @@ app.post('/eventos/editar/:id', verificarAutenticacao, async (req, res) => {
 
 
 app.post('/eventos/excluir/:id', verificarAutenticacao, async (req, res) => {
-  const adminId = req.session.adminId || req.session.usuarioAdminId;
+  const adminId = req.session.adminId || (req.session.usuario && req.session.usuario.admin_id);
   const eventoId = req.params.id;
 
   try {
@@ -1757,7 +1758,7 @@ app.post('/eventos/excluir/:id', verificarAutenticacao, async (req, res) => {
 
 
   app.get('/agenda', verificarAutenticacao, async (req, res) => {
-const adminId = req.session.adminId || req.session.usuarioAdminId; // ✅ aqui o ajuste
+  const adminId = req.session.adminId || (req.session.usuario && req.session.usuario.admin_id);
 
   try {
     const { rows: eventos } = await pgPool.query(
@@ -1776,7 +1777,7 @@ const adminId = req.session.adminId || req.session.usuarioAdminId; // ✅ aqui o
 
 
 app.get('/api/eventos', async (req, res) => {
-  const adminId = req.session.adminId || req.session.usuarioAdminId;
+  const adminId = req.session.adminId || (req.session.usuario && req.session.usuario.admin_id);
   console.log('adminId na rota /api/eventos:', adminId);
 
   if (!adminId) {
@@ -1813,7 +1814,7 @@ app.get('/api/eventos', async (req, res) => {
 
 
 app.get('/visitantes', verificarAutenticacao, async (req, res) => {
-  const adminId = req.session.adminId || req.session.usuarioAdminId;
+  const adminId = req.session.adminId || (req.session.usuario && req.session.usuario.admin_id);
 
   try {
     const resultado = await pgPool.query(
@@ -1835,7 +1836,7 @@ app.get('/visitantes', verificarAutenticacao, async (req, res) => {
 
 app.post('/visitantes/adicionar', verificarAutenticacao, async (req, res) => {
   const { nome, whatsapp, observacao, data_visita } = req.body;
-  const adminId = req.session.adminId || req.session.usuarioAdminId;
+  const adminId = req.session.adminId || (req.session.usuario && req.session.usuario.admin_id);
 
   try {
     await pgPool.query(
@@ -1987,7 +1988,7 @@ app.put('/visitantes/:id/contato', (req, res) => {
 
 
 app.delete('/eventos/:id', verificarAutenticacao, (req, res) => {
-  const adminId = req.session.adminId || req.session.usuarioAdminId;
+  const adminId = req.session.adminId || (req.session.usuario && req.session.usuario.admin_id);
   const eventoId = req.params.id;
 
   if (!adminId) {
