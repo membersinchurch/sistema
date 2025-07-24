@@ -2012,7 +2012,7 @@ app.delete('/eventos/:id', verificarAutenticacao, (req, res) => {
 });
 
 app.get('/batismos', verificarAutenticacao, async (req, res) => {
-  const adminId = req.session.adminId || req.session.usuario?.admin_id;
+  const adminId = req.session.adminId || (req.session.usuario && req.session.usuario.admin_id);
 
   try {
     const { rows: batismos } = await pgPool.query(
@@ -2070,12 +2070,14 @@ app.get('/certificado/:id', verificarAutenticacao, async (req, res) => {
     doc.pipe(res);
 
     doc.image('public/img/certificado_base.png', 0, 0, { width: 612 }); // use uma imagem base do certificado
-    doc.fontSize(20).text(candidato.nome, 400, 250); // ajuste a posição conforme o layout
-    doc.fontSize(14).text(
-      `Batizado em ${new Date(candidato.data_batismo).toLocaleDateString('pt-BR')}`,
-      350,
-      300
-    );
+    doc.fontSize(15).text(candidato.nome, 300, 200); // ajuste a posição conforme o layout
+    const dataFormatada = new Date(candidato.data_batismo).toLocaleDateString('pt-BR', {
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric'
+});
+    doc.fontSize(12).text(`${dataFormatada}`, 435, 350);
+    
 
     doc.end();
   } catch (err) {
