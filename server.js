@@ -1134,7 +1134,8 @@ app.get("/aniversariantes/hoje", verificarAutenticacao, (req, res) => {
 
 
 app.get('/aniversariantes', verificarAutenticacao, (req, res) => {
-  const adminId = req.session.adminId || req.session.usuarioAdminId;
+ const adminId = req.session.adminId || (req.session.usuario && req.session.usuario.admin_id);
+  
 
   const hoje = new Date();
   const mesAtual = hoje.getMonth() + 1;
