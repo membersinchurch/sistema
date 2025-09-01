@@ -215,6 +215,7 @@ app.post('/login_usuario', async (req, res) => {
       nome: usuario.nome,
       email: usuario.email,
       cargo: usuario.cargo,
+      igrejaId: usuario.nome_igreja,
       admin_id: usuario.admin_id // ESSENCIAL para saber de qual igreja ele é
     };
 
@@ -2071,13 +2072,23 @@ app.get('/certificado/:id', verificarAutenticacao, async (req, res) => {
     doc.pipe(res);
 
     doc.image('public/img/certificado_base.png', 0, 0, { width: 612 }); // use uma imagem base do certificado
-    doc.fontSize(15).text(candidato.nome, 300, 200); // ajuste a posição conforme o layout
+    doc.fontSize(14).text(candidato.nome, 300, 200);
+    const dataMeio = new Date(candidato.data_batismo).toLocaleDateString('pt-BR', {
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric' 
+  });
+    doc.fontSize(14).text(`${dataMeio}`, 330, 230);
+
+   // ajuste a posição conforme o layout
     const dataFormatada = new Date(candidato.data_batismo).toLocaleDateString('pt-BR', {
   day: 'numeric',
   month: 'long',
   year: 'numeric'
 });
-    doc.fontSize(12).text(`${dataFormatada}`, 435, 350);
+    doc.fontSize(10).text(`${dataFormatada}`, 445, 350);
+    
+
     
 
     doc.end();
@@ -2285,6 +2296,558 @@ app.post('/grupos/excluir/:id', verificarAutenticacao, async (req, res) => {
     res.send('Erro ao excluir grupo');
   }
 });
+
+app.get('/louvor', verificarAutenticacao, verificarCargo(['pastores', 'tesouraria']), async (req, res) => {
+    try {
+        const usuario = req.session.usuario;
+        const igrejaId = usuario.igrejaId;
+
+        if (!igrejaId) {
+            return res.status(400).send('Usuário não possui igreja associada.');
+        }
+
+        const setlistsResult = await pgPool.query(
+            'SELECT * FROM setlists WHERE nome_igreja = $1 ORDER BY data_culto DESC LIMIT 10',
+            [igrejaId]
+        );
+        const setlists = setlistsResult.rows;
+
+        const musicasResult = await pgPool.query(
+            'SELECT * FROM musicas ORDER BY titulo ASC'
+        );
+        const musicas = musicasResult.rows;
+
+        const ministrosResult = await pgPool.query(
+            'SELECT * FROM ministros_louvor WHERE nome_igreja = $1 ORDER BY nome ASC',
+            [igrejaId]
+        );
+        const ministros = ministrosResult.rows;
+
+        res.render('louvor/index', {
+            user: usuario,
+            setlists,
+            musicas,
+            ministros
+        });
+
+    } catch (err) {
+        console.error('Erro ao carregar módulo Louvor:', err);
+        res.status(500).send('Erro interno ao carregar módulo Louvor');
+    }
+});
+
+
+// POST - Criar nova setlist
+app.post('/louvor', verificarAutenticacao, verificarCargo(['pastores', 'tesouraria']), async (req, res) => {
+    try {
+        const usuario = req.session.usuario;
+        const igrejaId = usuario.igrejaId;
+
+        const {
+            data_culto,
+            musica_abertura,
+            musica_ofertorio,
+            musica_final,
+            ministro,
+            vocais,
+            link_video_abertura,
+            link_video_ofertorio,
+            link_video_final,
+            link_cifra_abertura,
+            link_cifra_ofertorio,
+            link_cifra_final
+        } = req.body
+
+        await pgPool.query(
+            `INSERT INTO public.setlists 
+            (nome_igreja, data_culto, musica_abertura, musica_ofertorio, musica_final, ministro, vocais, 
+             link_video_abertura, link_video_ofertorio, link_video_final, 
+             link_cifra_abertura, link_cifra_ofertorio, link_cifra_final) 
+             VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)`,
+            [igrejaId, data_culto, musica_abertura, musica_ofertorio, musica_final, ministro, vocais,
+            link_video_abertura, link_video_ofertorio, link_video_final,
+            link_cifra_abertura, link_cifra_ofertorio, link_cifra_final]
+        );
+
+        res.redirect('/louvor');
+    } catch (err) {
+        console.error('Erro ao criar setlist:', err);
+        res.status(500).send('Erro ao criar setlist');
+    }
+});
+
+app.get('/louvor/musicas', verificarAutenticacao, verificarCargo(['pastores', 'tesouraria']), async (req, res) => {
+    try {
+        const usuario = req.session.usuario;
+        const igrejaId = usuario.igrejaId;
+
+        const musicas = await pgPool.query(
+            'SELECT * FROM public.musicas WHERE nome_igreja = $1 ORDER BY titulo',
+            [igrejaId]
+        );
+
+        res.render('louvor/musicas', {
+            user: usuario,
+            musicas: musicas.rows
+        });
+
+    } catch (err) {
+        console.error('Erro ao carregar repertório de músicas:', err);
+        res.status(500).send('Erro interno ao carregar repertório de músicas');
+    }
+});
+
+app.post('/louvor/musica', verificarAutenticacao, verificarCargo(['pastores', 'tesouraria']), async (req, res) => {
+    try {
+        const usuario = req.session.usuario;
+        const igrejaId = usuario.igrejaId;
+
+        const { titulo, link_video, link_cifra } = req.body;
+
+        await pgPool.query(
+            'INSERT INTO public.musicas (nome_igreja, titulo, link_video, link_cifra) VALUES ($1,$2,$3,$4)',
+            [igrejaId, titulo, link_video, link_cifra]
+        );
+
+        res.redirect('/louvor/musicas');
+
+    } catch (err) {
+        console.error('Erro ao adicionar música:', err);
+        res.status(500).send('Erro ao adicionar música');
+    }
+});
+
+// Rota para criar nova setlist
+app.post('/louvor/criar', verificarAutenticacao, verificarCargo(['pastores', 'tesouraria']), async (req, res) => {
+  try {
+      const usuario = req.session.usuario;
+      const igrejaId = usuario.igrejaId;
+
+      // Pegando dados do formulário
+      const { data_culto, musica_abertura, musica_ofertorio, musica_final, ministro, vocais } = req.body;
+
+      // Validações básicas
+      if (!data_culto) {
+          return res.status(400).send('Data do culto é obrigatória.');
+      }
+
+      // Inserção no banco
+      await pgPool.query(
+        `INSERT INTO setlists 
+          (nome_igreja, data_culto, musica_abertura, musica_ofertorio, musica_final, ministro, vocais) 
+          VALUES ($1,$2,$3,$4,$5,$6,$7)`,
+        [igrejaId, data_culto, musica_abertura, musica_ofertorio, musica_final, ministro, vocais]
+      );
+
+      // Redireciona de volta para o módulo Louvor
+      res.redirect('/louvor');
+
+  } catch (err) {
+      console.error('Erro ao criar setlist:', err);
+      res.status(500).send('Erro interno ao criar setlist');
+  }
+});
+
+app.post('/louvor/cadastrar', verificarAutenticacao, verificarCargo(['pastores', 'tesouraria']), async (req, res) => {
+  try {
+    const usuario = req.session.usuario;
+    const igrejaId = usuario.igrejaId;
+    const usuarioId = usuario.id;
+
+    if (!igrejaId) {
+      return res.status(400).send('Usuário não possui igreja associada.');
+    }
+
+    // Extrai os dados do formulário
+    const {
+      data_culto,
+      ministro,
+      vocais,
+      musica_abertura,
+      video_abertura,
+      cifra_abertura,
+      musica_ofertorio,
+      video_ofertorio,
+      cifra_ofertorio,
+      musica_final,
+      video_final,
+      cifra_final
+    } = req.body;
+
+    // Insere a nova setlist
+    await pgPool.query(
+      `INSERT INTO setlists (
+        nome_igreja,
+        usuario_id,
+        data_culto,
+        ministro,
+        vocais,
+        musica_abertura, video_abertura, cifra_abertura,
+        musica_ofertorio, video_ofertorio, cifra_ofertorio,
+        musica_final, video_final, cifra_final
+      ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)`,
+      [
+        igrejaId,
+        usuarioId,
+        data_culto,
+        ministro || null,
+        vocais || null,
+        musica_abertura || null,
+        video_abertura || null,
+        cifra_abertura || null,
+        musica_ofertorio || null,
+        video_ofertorio || null,
+        cifra_ofertorio || null,
+        musica_final || null,
+        video_final || null,
+        cifra_final || null
+      ]
+    );
+
+    // Redireciona de volta para a página de Louvor
+    res.redirect('/louvor');
+
+  } catch (err) {
+    console.error('Erro ao cadastrar setlist:', err);
+    res.status(500).send('Erro interno ao cadastrar setlist');
+  }
+});
+
+app.post('/louvor/excluir/:id', verificarAutenticacao, verificarCargo(['pastores', 'tesouraria']), async (req, res) => {
+  try {
+    const usuario = req.session.usuario;
+    const igrejaId = usuario.igrejaId;
+    const setlistId = req.params.id;
+
+    if (!igrejaId) {
+      return res.status(400).send('Usuário não possui igreja associada.');
+    }
+
+    // Exclui a setlist somente se pertencer à mesma igreja do usuário
+    await pgPool.query(
+      'DELETE FROM setlists WHERE id = $1 AND nome_igreja = $2',
+      [setlistId, igrejaId]
+    );
+
+    // Redireciona de volta para a página do Louvor
+    res.redirect('/louvor');
+
+  } catch (err) {
+    console.error('Erro ao excluir setlist:', err);
+    res.status(500).send('Erro interno ao excluir setlist');
+  }
+});
+
+app.get('/louvor/musicas', verificarAutenticacao, verificarCargo(['pastores', 'tesouraria']), async (req, res) => {
+  try {
+    const usuario = req.session.usuario;
+    const igrejaId = usuario.igrejaId;
+
+    const musicas = await pgPool.query(
+      'SELECT * FROM musicas WHERE nome_igreja = $1 ORDER BY titulo',
+      [igrejaId]
+    );
+
+    res.render('louvor/musicas', {
+      user: usuario,
+      musicas: musicas.rows
+    });
+
+  } catch (err) {
+    console.error('Erro ao carregar repertório de músicas:', err);
+    res.status(500).send('Erro interno ao carregar repertório de músicas');
+  }
+});
+
+// Rota para adicionar nova música
+app.post('/louvor/musica', verificarAutenticacao, verificarCargo(['pastores', 'tesouraria']), async (req, res) => {
+  try {
+    const { titulo } = req.body; // pega o título da música do formulário
+    const usuario = req.session.usuario;
+    const igrejaId = usuario.igrejaId;
+
+    if (!titulo || !igrejaId) {
+      return res.status(400).send('Título da música ou igreja não informado.');
+    }
+
+    // Insere a música no banco de dados
+    await pgPool.query(
+      'INSERT INTO musicas (titulo, nome_igreja) VALUES ($1, $2)',
+      [titulo, igrejaId]
+    );
+
+    // Redireciona de volta para a página de Louvor
+    res.redirect('/louvor');
+  } catch (err) {
+    console.error('Erro ao adicionar música:', err);
+    res.status(500).send('Erro interno ao adicionar música');
+  }
+});
+
+
+app.post('/louvor/musicas/cadastrar', verificarAutenticacao, verificarCargo(['pastores', 'tesouraria']), async (req, res) => {
+  try {
+    const usuario = req.session.usuario;
+    const igrejaId = usuario.igrejaId;
+    const usuarioId = usuario.id;
+
+    const { titulo, video, cifra } = req.body;
+
+    await pgPool.query(
+      'INSERT INTO musicas (titulo, video, cifra, nome_igreja, usuario_id) VALUES ($1,$2,$3,$4,$5)',
+      [titulo, video || null, cifra || null, igrejaId, usuarioId]
+    );
+
+    res.redirect('/louvor/musicas');
+
+  } catch (err) {
+    console.error('Erro ao cadastrar música:', err);
+    res.status(500).send('Erro interno ao cadastrar música');
+  }
+});
+
+app.post('/louvor/musicas/excluir/:id', verificarAutenticacao, verificarCargo(['pastores', 'tesouraria']), async (req, res) => {
+  try {
+    const usuario = req.session.usuario;
+    const igrejaId = usuario.igrejaId;
+    const musicaId = req.params.id;
+
+    await pgPool.query(
+      'DELETE FROM musicas WHERE id = $1 AND nome_igreja = $2',
+      [musicaId, igrejaId]
+    );
+
+    res.redirect('/louvor/musicas');
+
+  } catch (err) {
+    console.error('Erro ao excluir música:', err);
+    res.status(500).send('Erro interno ao excluir música');
+  }
+});
+
+app.get('/louvor/editar/:id', verificarAutenticacao, verificarCargo(['pastores', 'tesouraria']), async (req, res) => {
+  try {
+    const usuario = req.session.usuario;
+    const igrejaId = usuario.igrejaId;
+    const setlistId = req.params.id;
+
+    const result = await pgPool.query(
+      'SELECT * FROM setlists WHERE id = $1 AND nome_igreja = $2',
+      [setlistId, igrejaId]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).send('Setlist não encontrada');
+    }
+
+    // Busca também a lista de músicas para o select
+    const musicas = await pgPool.query(
+      'SELECT * FROM musicas WHERE nome_igreja = $1 ORDER BY titulo',
+      [igrejaId]
+    );
+
+    res.render('louvor/editar_setlist', {
+      user: usuario,
+      setlist: result.rows[0],
+      musicas: musicas.rows
+    });
+
+  } catch (err) {
+    console.error('Erro ao carregar setlist para edição:', err);
+    res.status(500).send('Erro interno ao carregar setlist');
+  }
+});
+
+// GET para editar setlist
+app.get('/louvor/editar/:id', verificarAutenticacao, verificarCargo(['pastores', 'tesouraria']), async (req, res) => {
+    try {
+        const usuario = req.session.usuario;
+        const igrejaId = usuario.igrejaId;
+        const setlistId = req.params.id;
+
+        // Busca setlist
+        const setlistResult = await pgPool.query(
+            'SELECT * FROM setlists WHERE id = $1 AND nome_igreja = $2',
+            [setlistId, igrejaId]
+        );
+
+        if (setlistResult.rowCount === 0) {
+            return res.status(404).send('Setlist não encontrada');
+        }
+
+        // Busca músicas para popular os selects
+        const musicasResult = await pgPool.query(
+            'SELECT * FROM public.musicas WHERE nome_igreja = $1 ORDER BY titulo',
+            [igrejaId]
+        );
+
+        res.render('louvor/editar', {
+            user: usuario,
+            setlist: setlistResult.rows[0],
+            musicas: musicasResult.rows
+        });
+
+    } catch (err) {
+        console.error('Erro ao carregar edição da setlist:', err);
+        res.status(500).send('Erro interno ao carregar edição da setlist');
+    }
+});
+
+// POST para atualizar setlist
+app.post('/louvor/editar/:id', verificarAutenticacao, verificarCargo(['pastores', 'tesouraria']), async (req, res) => {
+    try {
+        const usuario = req.session.usuario;
+        const igrejaId = usuario.igrejaId;
+        const setlistId = req.params.id;
+
+        const {
+            data_culto,
+            ministro,
+            vocais,
+            musica_abertura,
+            video_abertura,
+            cifra_abertura,
+            musica_ofertorio,
+            video_ofertorio,
+            cifra_ofertorio,
+            musica_final,
+            video_final,
+            cifra_final
+        } = req.body;
+
+        await pgPool.query(
+            `UPDATE setlists SET
+                data_culto = $1,
+                ministro = $2,
+                vocais = $3,
+                musica_abertura = $4,
+                video_abertura = $5,
+                cifra_abertura = $6,
+                musica_ofertorio = $7,
+                video_ofertorio = $8,
+                cifra_ofertorio = $9,
+                musica_final = $10,
+                video_final = $11,
+                cifra_final = $12
+             WHERE id = $13 AND nome_igreja = $14`,
+            [
+                data_culto || null,
+                ministro || null,
+                vocais || null,
+                musica_abertura || null,
+                video_abertura || null,
+                cifra_abertura || null,
+                musica_ofertorio || null,
+                video_ofertorio || null,
+                cifra_ofertorio || null,
+                musica_final || null,
+                video_final || null,
+                cifra_final || null,
+                setlistId,
+                igrejaId
+            ]
+        );
+
+        res.redirect('/louvor');
+
+    } catch (err) {
+        console.error('Erro ao atualizar setlist:', err);
+        res.status(500).send('Erro interno ao atualizar setlist');
+    }
+});
+
+app.post('/louvor/deletar/:id', verificarAutenticacao, verificarCargo(['pastores', 'tesouraria']), async (req, res) => {
+    try {
+        const { id } = req.params;
+        const usuario = req.session.usuario;
+        const igrejaId = usuario.igrejaId;
+
+        if (!igrejaId) {
+            return res.status(400).send('Usuário não possui igreja associada.');
+        }
+
+        // Exclui o setlist apenas da igreja do usuário
+        await pgPool.query(
+            'DELETE FROM setlists WHERE id = $1 AND nome_igreja = $2',
+            [id, igrejaId]
+        );
+
+        res.redirect('/louvor'); // Volta para a página principal do módulo Louvor
+    } catch (err) {
+        console.error('Erro ao excluir setlist:', err);
+        res.status(500).send('Erro interno ao excluir setlist');
+    }
+});
+
+app.post('/louvor/ministro', verificarAutenticacao, verificarCargo(['pastores', 'tesouraria']), async (req, res) => {
+    try {
+        const { nome, tipo } = req.body;
+        const usuario = req.session.usuario;
+        const igrejaId = usuario.igrejaId;
+
+        if (!igrejaId) {
+            return res.status(400).send('Usuário não possui igreja associada.');
+        }
+
+        await pgPool.query(
+            'INSERT INTO ministros_louvor (nome, tipo, nome_igreja) VALUES ($1, $2, $3)',
+            [nome, tipo, igrejaId]
+        );
+
+        res.redirect('/louvor');
+    } catch (err) {
+        console.error('Erro ao cadastrar ministro:', err);
+        res.status(500).send('Erro interno ao cadastrar ministro');
+    }
+});
+
+app.post('/louvor/ministro', verificarAutenticacao, verificarCargo(['pastores', 'tesouraria']), async (req, res) => {
+    try {
+        const { nome, tipo } = req.body;
+        const usuario = req.session.usuario;
+        const igrejaId = usuario.igrejaId;
+
+        if (!igrejaId) {
+            return res.status(400).send('Usuário não possui igreja associada.');
+        }
+
+        await pgPool.query(
+            'INSERT INTO ministros_louvor (nome, tipo, nome_igreja) VALUES ($1, $2, $3)',
+            [nome, tipo, igrejaId]
+        );
+
+        res.redirect('/louvor');
+    } catch (err) {
+        console.error('Erro ao cadastrar ministro:', err);
+        res.status(500).send('Erro interno ao cadastrar ministro');
+    }
+});
+
+app.post('/louvor/setlist', verificarAutenticacao, verificarCargo(['pastores', 'tesouraria']), async (req, res) => {
+    try {
+        const { data_culto, musicas, vocalistas, ministros } = req.body;
+        const usuario = req.session.usuario;
+        const igrejaId = usuario.igrejaId;
+
+        await pgPool.query(
+            'INSERT INTO setlists (data_culto, musicas, vocalistas, ministros, nome_igreja) VALUES ($1, $2, $3, $4, $5)',
+            [
+                data_culto,
+                JSON.stringify(musicas),
+                Array.isArray(vocalistas) ? vocalistas.join(', ') : vocalistas,
+                Array.isArray(ministros) ? ministros.join(', ') : ministros,
+                igrejaId
+            ]
+        );
+
+        res.redirect('/louvor');
+    } catch (err) {
+        console.error('Erro ao criar setlist:', err);
+        res.status(500).send('Erro interno ao criar setlist');
+    }
+});
+
+
 
 
 

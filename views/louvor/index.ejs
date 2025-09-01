@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Módulo de Louvor - Members In Church</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 text-gray-800">
+
+  <!-- Cabeçalho -->
+  <header class="bg-indigo-600 text-white p-4 shadow-md flex justify-between items-center">
+    <h1 class="text-xl font-bold">Módulo de Louvor</h1>
+    <span class="text-sm">Logado como: <%= user.nome %></span>
+  </header>
+
+  <main class="max-w-5xl mx-auto mt-6 p-4">
+
+    <!-- Formulário: Adicionar nova música -->
+    <section class="bg-white p-6 rounded-lg shadow mb-6">
+      <h2 class="text-lg font-bold mb-4">Adicionar Nova Música</h2>
+      <form action="/louvor/musica" method="POST" class="flex gap-2">
+        <input 
+          type="text" 
+          name="titulo" 
+          placeholder="Título da música" 
+          class="border rounded p-2 flex-1" 
+          required
+        >
+        <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Salvar</button>
+      </form>
+    </section>
+    
+    <!--Formulário Ministros -->
+    <section class="bg-white p-6 rounded-lg shadow mb-6">
+  <h2 class="text-lg font-bold mb-4">Adicionar Ministro/Vocalista</h2>
+  <form action="/louvor/ministro" method="POST" class="flex gap-2">
+    <input type="text" name="nome" placeholder="Nome" class="border rounded p-2 flex-1" required>
+    <select name="tipo" class="border rounded p-2" required>
+      <option value="">Selecione</option>
+      <option value="Ministro">Ministro</option>
+      <option value="Vocalista">Vocalista</option>
+    </select>
+    <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded">Salvar</button>
+  </form>
+</section>
+<!-- Ministros de Louvor -->
+<div>
+  <label class="block mb-1 font-medium">Ministros de Louvor</label>
+  <select name="ministros" multiple class="border rounded p-2 w-full">
+    <% ministros.filter(m => m.tipo === 'Ministro').forEach(min => { %>
+      <option value="<%= min.nome %>"><%= min.nome %></option>
+    <% }) %>
+  </select>
+  <small class="text-gray-500">CTRL (Windows) ou Command (Mac) para selecionar vários</small>
+</div>
+
+<!-- Vocalistas -->
+<div>
+  <label class="block mb-1 font-medium">Vocalistas</label>
+  <select name="vocalistas" multiple class="border rounded p-2 w-full">
+    <% ministros.filter(m => m.tipo === 'Vocalista').forEach(v => { %>
+      <option value="<%= v.nome %>"><%= v.nome %></option>
+    <% }) %>
+  </select>
+  <small class="text-gray-500">CTRL (Windows) ou Command (Mac) para selecionar vários</small>
+</div>
+
+
+    <!-- Formulário de Nova Setlist -->
+    <section class="bg-white p-6 rounded-lg shadow mb-8">
+      <h2 class="text-lg font-bold mb-4">Criar Nova Setlist</h2>
+
+      <form action="/louvor/criar" method="POST" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+        <div>
+          <label class="block mb-1 font-medium">Data do Culto</label>
+          <input type="date" name="data_culto" class="border rounded p-2 w-full" required>
+        </div>
+
+        <!-- Música de Abertura -->
+        <div>
+          <label class="block mb-1 font-medium">Música de Abertura</label>
+          <select name="musica_abertura" id="musica_abertura" class="border rounded p-2 w-full">
+            <option value="">Selecione a música de abertura</option>
+            <% musicas.forEach(m => { %>
+              <option value="<%= m.titulo %>" data-video="<%= m.video || '' %>" data-cifra="<%= m.cifra || '' %>">
+                <%= m.titulo %>
+              </option>
+            <% }) %>
+          </select>
+          <input type="hidden" name="video_abertura" id="video_abertura">
+          <input type="hidden" name="cifra_abertura" id="cifra_abertura">
+        </div>
+
+        <!-- Música de Oferta -->
+        <div>
+          <label class="block mb-1 font-medium">Música de Oferta</label>
+          <select name="musica_oferta" id="musica_oferta" class="border rounded p-2 w-full">
+            <option value="">Selecione a música de oferta</option>
+            <% musicas.forEach(m => { %>
+              <option value="<%= m.titulo %>" data-video="<%= m.video || '' %>" data-cifra="<%= m.cifra || '' %>">
+                <%= m.titulo %>
+              </option>
+            <% }) %>
+          </select>
+          <input type="hidden" name="video_oferta" id="video_oferta">
+          <input type="hidden" name="cifra_oferta" id="cifra_oferta">
+        </div>
+
+        <!-- Música Final -->
+        <div>
+          <label class="block mb-1 font-medium">Música Final</label>
+          <select name="musica_final" id="musica_final" class="border rounded p-2 w-full">
+            <option value="">Selecione a música final</option>
+            <% musicas.forEach(m => { %>
+              <option value="<%= m.titulo %>" data-video="<%= m.video || '' %>" data-cifra="<%= m.cifra || '' %>">
+                <%= m.titulo %>
+              </option>
+            <% }) %>
+          </select>
+          <input type="hidden" name="video_final" id="video_final">
+          <input type="hidden" name="cifra_final" id="cifra_final">
+        </div>
+
+        <!-- Outras músicas -->
+        <div class="md:col-span-2">
+          <label class="block mb-1 font-medium">Outras Músicas</label>
+          <select name="outras_musicas[]" multiple class="border rounded p-2 w-full">
+            <% musicas.forEach(m => { %>
+              <option value="<%= m.titulo %>"><%= m.titulo %></option>
+            <% }) %>
+          </select>
+          <small class="text-gray-500">Segure CTRL (Windows) ou Command (Mac) para selecionar várias.</small>
+        </div>
+
+        <div class="md:col-span-2 text-right">
+          <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">
+            Salvar Setlist
+          </button>
+        </div>
+
+      </form>
+    </section>
+
+    <!-- Lista de Setlists -->
+    <section class="bg-white p-6 rounded-lg shadow">
+      <h2 class="text-lg font-bold mb-4">Últimas Setlists</h2>
+
+      <% if (setlists.length > 0) { %>
+        <table class="w-full border-collapse">
+          <thead>
+            <tr class="bg-gray-200 text-left">
+              <th class="p-2 border">Data</th>
+              <th class="p-2 border">Abertura</th>
+              <th class="p-2 border">Oferta</th>
+              <th class="p-2 border">Final</th>
+              <th class="p-2 border">Outras Músicas</th>
+              <th class="p-2 border">Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% setlists.forEach(s => { %>
+              <tr class="hover:bg-gray-50">
+                <td class="p-2 border"><%= new Date(s.data_culto).toLocaleDateString('pt-BR') %></td>
+                <td class="p-2 border"><%= s.musica_abertura %></td>
+                <td class="p-2 border"><%= s.musica_oferta %></td>
+                <td class="p-2 border"><%= s.musica_final %></td>
+                <td class="p-2 border"><%= s.outras_musicas %></td>
+                <td class="p-2 border flex gap-2">
+                  <a href="/louvor/editar/<%= s.id %>" class="bg-yellow-500 text-white px-2 py-1 rounded hover:bg-yellow-600 text-sm">✏️ Editar</a>
+                  <form action="/louvor/deletar/<%= s.id %>" method="POST" onsubmit="return confirm('Tem certeza que deseja excluir esta setlist?')">
+                    <button type="submit" class="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600 text-sm">🗑️ Excluir</button>
+                  </form>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      <% } else { %>
+        <p class="text-gray-500">Nenhuma setlist cadastrada ainda.</p>
+      <% } %>
+    </section>
+
+  </main>
+
+  <script>
+    // Função para atualizar automaticamente os campos hidden de vídeo e cifra
+    ['abertura', 'oferta', 'final'].forEach(tipo => {
+      const select = document.getElementById(`musica_${tipo}`);
+      const videoInput = document.getElementById(`video_${tipo}`);
+      const cifraInput = document.getElementById(`cifra_${tipo}`);
+
+      if(select) {
+        select.addEventListener('change', () => {
+          const option = select.options[select.selectedIndex];
+          videoInput.value = option.dataset.video || '';
+          cifraInput.value = option.dataset.cifra || '';
+        });
+      }
+    });
+  </script>
+
+</body>
+</html>

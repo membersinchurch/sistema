@@ -1,0 +1,45 @@
+<div class="bg-white shadow-md rounded-lg p-6">
+  <h2 class="text-xl font-bold mb-4 text-center">Repertório Geral de Músicas</h2>
+
+  <!-- Formulário para adicionar música -->
+  <form action="/louvor/musicas" method="POST" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+    <input type="text" name="titulo" placeholder="Título da Música" class="border rounded p-2" required>
+    <input type="url" name="link_video" placeholder="Link do Vídeo" class="border rounded p-2">
+    <input type="url" name="link_cifra" placeholder="Link da Cifra" class="border rounded p-2">
+    <button type="submit" class="bg-blue-600 text-white rounded p-2 col-span-full hover:bg-blue-700">Adicionar Música</button>
+  </form>
+
+  <!-- Lista de músicas cadastradas -->
+  <div class="overflow-x-auto">
+    <table class="min-w-full text-sm table-auto border">
+      <thead class="bg-gray-200 text-gray-700">
+        <tr>
+          <th class="px-2 py-1">Título</th>
+          <th class="px-2 py-1">Vídeo</th>
+          <th class="px-2 py-1">Cifra</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if(musicas.length === 0){ %>
+          <tr><td colspan="3" class="text-center py-4 text-gray-500">Nenhuma música cadastrada.</td></tr>
+        <% } else { %>
+          <% musicas.forEach(m => { %>
+            <tr class="border-t hover:bg-gray-50">
+              <td class="px-2 py-1"><%= m.titulo %></td>
+              <td class="px-2 py-1">
+                <% if(m.link_video){ %>
+                  <a href="<%= m.link_video %>" target="_blank" class="text-blue-600">🎬</a>
+                <% } %>
+              </td>
+              <td class="px-2 py-1">
+                <% if(m.link_cifra){ %>
+                  <a href="<%= m.link_cifra %>" target="_blank" class="text-green-600">🎼</a>
+                <% } %>
+              </td>
+            </tr>
+          <% }) %>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+</div>

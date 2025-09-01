@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Editar Setlist</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <h1>Editar Setlist</h1>
+
+    <form action="/louvor/editar/<%= setlist.id %>" method="POST">
+        <div>
+            <label>Data do Culto:</label>
+            <input type="date" name="data_culto" value="<%= setlist.data_culto ? setlist.data_culto.toISOString().split('T')[0] : '' %>">
+        </div>
+
+        <div>
+            <label>Ministro:</label>
+            <input type="text" name="ministro" value="<%= setlist.ministro || '' %>">
+        </div>
+
+        <div>
+            <label>Vocais:</label>
+            <input type="text" name="vocais" value="<%= setlist.vocais || '' %>">
+        </div>
+
+        <hr>
+
+        <!-- Música Abertura -->
+        <h3>Música de Abertura</h3>
+        <div>
+            <label>Selecionar música:</label>
+            <select name="musica_abertura">
+                <option value="">-- Selecione --</option>
+                <% musicas.forEach(m => { %>
+                    <option value="<%= m.titulo %>" <%= setlist.musica_abertura === m.titulo ? 'selected' : '' %>><%= m.titulo %></option>
+                <% }) %>
+            </select>
+        </div>
+        <div>
+            <label>Vídeo:</label>
+            <input type="url" name="video_abertura" value="<%= setlist.video_abertura || '' %>">
+        </div>
+        <div>
+            <label>Cifra:</label>
+            <input type="url" name="cifra_abertura" value="<%= setlist.cifra_abertura || '' %>">
+        </div>
+
+        <hr>
+
+        <!-- Música Ofertório -->
+        <h3>Música de Ofertório</h3>
+        <div>
+            <label>Selecionar música:</label>
+            <select name="musica_ofertorio">
+                <option value="">-- Selecione --</option>
+                <% musicas.forEach(m => { %>
+                    <option value="<%= m.titulo %>" <%= setlist.musica_ofertorio === m.titulo ? 'selected' : '' %>><%= m.titulo %></option>
+                <% }) %>
+            </select>
+        </div>
+        <div>
+            <label>Vídeo:</label>
+            <input type="url" name="video_ofertorio" value="<%= setlist.video_ofertorio || '' %>">
+        </div>
+        <div>
+            <label>Cifra:</label>
+            <input type="url" name="cifra_ofertorio" value="<%= setlist.cifra_ofertorio || '' %>">
+        </div>
+
+        <hr>
+
+        <!-- Música Final -->
+        <h3>Música Final</h3>
+        <div>
+            <label>Selecionar música:</label>
+            <select name="musica_final">
+                <option value="">-- Selecione --</option>
+                <% musicas.forEach(m => { %>
+                    <option value="<%= m.titulo %>" <%= setlist.musica_final === m.titulo ? 'selected' : '' %>><%= m.titulo %></option>
+                <% }) %>
+            </select>
+        </div>
+        <div>
+            <label>Vídeo:</label>
+            <input type="url" name="video_final" value="<%= setlist.video_final || '' %>">
+        </div>
+        <div>
+            <label>Cifra:</label>
+            <input type="url" name="cifra_final" value="<%= setlist.cifra_final || '' %>">
+        </div>
+
+        <br>
+        <button type="submit">Salvar Alterações</button>
+        <a href="/louvor">Cancelar</a>
+    </form>
+</body>
+</html>
