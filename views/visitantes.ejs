@@ -113,10 +113,6 @@
           <div>
             <label for="observacao" class="block text-sm font-medium text-gray-700">Observação</label>
             <textarea name="observacao" id="observacao" rows="4" class="mt-1 block w-full border border-gray-300 rounded px-3 py-2 resize-y"></textarea>
-
-          </select>
-
-            </select>
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700">Data da Visita</label>
@@ -162,9 +158,26 @@
             <td class="px-4 py-2"><%= v.observacao %></td>
             <td class="px-4 py-2"><%= v.data_visita ? v.data_visita.toLocaleDateString() : '' %></td>
             <td class="px-4 py-2 text-center">
-              <form action="/visitantes/excluir/<%= v.id %>" method="POST" onsubmit="return confirm('Tem certeza que deseja excluir este visitante?');">
-                <button type="submit" class="text-red-600 hover:text-red-800 font-semibold">Excluir</button>
-              </form>
+              <div class="flex gap-2 justify-center">
+  <!-- Botão Editar -->
+  <button 
+    type="button"
+    onclick='abrirModal(
+      <%= v.id %>,
+      <%- JSON.stringify(v.nome) %>,
+      <%- JSON.stringify(v.whatsapp) %>,
+      <%- JSON.stringify(v.observacao) %>,
+      <%- JSON.stringify(v.data_visita ? v.data_visita.toISOString().split("T")[0] : "") %>
+    )'
+    class="text-blue-600 hover:text-blue-800 font-semibold">
+    Editar
+  </button>
+
+  <!-- Botão Excluir -->
+  <form action="/visitantes/excluir/<%= v.id %>" method="POST" onsubmit="return confirm('Tem certeza que deseja excluir este visitante?');">
+    <button type="submit" class="text-red-600 hover:text-red-800 font-semibold">Excluir</button>
+  </form>
+</div>
             </td>
           </tr>
         <% }) %>
@@ -173,7 +186,45 @@
   </table>
 </div>
 
-      <!-- Scripts -->
+    </div>
+  </main>
+
+  <!-- Modal de Edição -->
+  <div id="modalEdicao" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-6 relative">
+      <h2 class="text-lg font-bold mb-4">Editar Visitante</h2>
+      <form id="formEdicao" method="POST">
+        <input type="hidden" id="editId" name="id">
+
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700">Nome</label>
+          <input type="text" id="editNome" name="nome" class="w-full p-2 border rounded">
+        </div>
+
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700">WhatsApp</label>
+          <input type="text" id="editWhatsapp" name="whatsapp" class="w-full p-2 border rounded">
+        </div>
+
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700">Observação</label>
+          <textarea id="editObservacao" name="observacao" rows="3" class="w-full p-2 border rounded"></textarea>
+        </div>
+
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700">Data da Visita</label>
+          <input type="date" id="editDataVisita" name="data_visita" class="w-full p-2 border rounded">
+        </div>
+
+        <div class="flex justify-end gap-2">
+          <button type="button" onclick="fecharModal()" class="px-4 py-2 bg-gray-400 text-white rounded">Cancelar</button>
+          <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded">Salvar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Scripts -->
   <script>
     document.addEventListener("DOMContentLoaded", () => {
       const toggleButton = document.getElementById("menuBtn");
@@ -182,15 +233,30 @@
       if (toggleButton && sidebar) {
         toggleButton.addEventListener("click", () => {
           sidebar.classList.toggle("-translate-x-full");
-     });
+        });
+      }
+    });
+
+    // Abrir modal e preencher dados
+    function abrirModal(id, nome, whatsapp, observacao, dataVisita) {
+      document.getElementById("modalEdicao").classList.remove("hidden");
+      document.getElementById("modalEdicao").classList.add("flex");
+
+      document.getElementById("editId").value = id;
+      document.getElementById("editNome").value = nome;
+      document.getElementById("editWhatsapp").value = whatsapp;
+      document.getElementById("editObservacao").value = observacao || "";
+      document.getElementById("editDataVisita").value = dataVisita || "";
+
+      document.getElementById("formEdicao").action = "/visitantes/editar/" + id;
     }
-  });
-</script>
 
-      
-    
+    // Fechar modal
+    function fecharModal() {
+      document.getElementById("modalEdicao").classList.add("hidden");
+      document.getElementById("modalEdicao").classList.remove("flex");
+    }
+  </script>
 
-    </div>
-  </main>
 </body>
 </html>

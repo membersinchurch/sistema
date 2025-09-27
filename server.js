@@ -1987,6 +1987,26 @@ app.put('/visitantes/:id/contato', (req, res) => {
   });
 });
 
+// Rota para editar visitante
+app.post('/visitantes/editar/:id', verificarAutenticacao, async (req, res) => {
+  const { id } = req.params;
+  const { nome, whatsapp, observacao, data_visita } = req.body;
+  const adminId = req.session.adminId || (req.session.usuario && req.session.usuario.admin_id);
+
+  try {
+    await pgPool.query(
+      `UPDATE visitantes
+       SET nome = $1, whatsapp = $2, observacao = $3, data_visita = $4
+       WHERE id = $5 AND admin_id = $6`,
+      [nome, whatsapp, observacao, data_visita, id, adminId]
+    );
+
+    res.redirect('/visitantes');
+  } catch (err) {
+    console.error('Erro ao editar visitante:', err);
+    res.status(500).send('Erro ao editar visitante.');
+  }
+});
 
 
 app.delete('/eventos/:id', verificarAutenticacao, (req, res) => {
