@@ -817,7 +817,7 @@ app.post('/cadastro', async (req, res) => {
 
 app.get('/editar-usuario/:id', async (req, res) => {
   const { id } = req.params;
-  const adminId = req.session.adminId;
+  //const adminId = req.session.adminId;
 
   try {
     const usuario = await pgPool.query(
