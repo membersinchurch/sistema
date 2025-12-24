@@ -21,12 +21,13 @@ const bodyParser = require('body-parser');
 
 // Configuração do banco PostgreSQL
 const pgPool = new Pool({
-  connectionString: 'postgresql://postgres:bFDBiRAwIPmtQqtkRBDfwfZpFHvqaViS@metro.proxy.rlwy.net:50378/railway',
-  ssl: {
-    rejectUnauthorized: false
-  }
-});
+  host: 'localhost',
+  user: 'postgres',
+  password: 'mclRaposo2025@',
+  database: 'membersinchurch',
+  port: 5432
 
+});
 
 
 // Primeiro declara storage
