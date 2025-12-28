@@ -2,7 +2,7 @@
 // gerarHash.js
 const bcrypt = require('bcryptjs');
 
-const novaSenha = '250981'; // 🛠️ Substitua pela nova senha desejada
+const novaSenha = '123456'; // 🛠️ Substitua pela nova senha desejada
 
 bcrypt.hash(novaSenha, 10, (err, hash) => {
   if (err) {
